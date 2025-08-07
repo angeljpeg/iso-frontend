@@ -1,24 +1,36 @@
-export interface Asignatura {
+// Enum para roles de usuario
+export enum RolUsuario {
+  COORDINADOR = 'coordinador',
+  MODERADOR = 'moderador',
+  PROFESOR_TIEMPO_COMPLETO = 'profesor_tiempo_completo',
+  PROFESOR_ASIGNATURA = 'profesor_asignatura',
+}
+
+// Usuario/Profesor interface
+export interface Usuario {
   id: string;
+  email: string;
   nombre: string;
-  carrera: string;
+  apellido: string;
+  rol: RolUsuario;
   activo: boolean;
-  temas: Tema[];
+  resetPasswordToken?: string | null;
+  resetPasswordExpires?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
+// Las asignaturas y temas son datos estáticos en el backend, no entidades de BD
+export interface Asignatura {
+  nombre: string;
+  horasProgramadas: number;
+  temas: Tema[];
+}
+
 export interface Tema {
-  id: string;
   nombre: string;
   unidad: number;
-  descripcion?: string;
-  semanaRecomendada: number;
-  horasProgramadas?: number;
-  asignaturaId: string;
-  activo: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  semanaProgramada: number;
 }
 
 export interface Cuatrimestre {
@@ -45,15 +57,18 @@ export interface Grupo {
   updatedAt: Date;
 }
 
+// CargaAcademica actualizada según la entidad del backend
 export interface CargaAcademica {
   id: string;
   profesorId: string;
-  asignaturaId: string;
+  carrera: string; // Es un string, no una relación
+  asignatura: string; // Es un string, no una relación
   grupoId: string;
   cuatrimestreId: string;
   activo: boolean;
-  asignatura: Asignatura;
-  grupo: Grupo;
+  // Relaciones eager
+  profesor: Usuario; // Relación con Usuario, no solo ID
+  grupo: Grupo; // Relación con Grupo
   createdAt: Date;
   updatedAt: Date;
 }
