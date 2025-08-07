@@ -18,24 +18,19 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ nombre, apellido, email, onLogout }: UserMenuProps) {
-  const userInitials = `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`;
+  const userInitials = `${nombre?.charAt(0) || ""}${apellido?.charAt(0) || ""}`;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex items-center space-x-2 h-8"
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-utn-primary text-white text-sm">
+        <Button variant="ghost" className="flex items-center space-x-2 h-8">
+          <Avatar className="w-8 h-8">
+            <AvatarFallback className="text-sm text-black bg-green-500/60">
               {userInitials}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden sm:block text-sm font-medium">
-            {nombre}
-          </span>
-          <ChevronDown className="h-4 w-4" />
+          <span className="hidden text-sm font-medium sm:block">{nombre}</span>
+          <ChevronDown className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -51,19 +46,16 @@ export function UserMenu({ nombre, apellido, email, onLogout }: UserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
+          <User className="mr-2 w-4 h-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
+          <Settings className="mr-2 w-4 h-4" />
           <span>Configuración</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={onLogout}
-          className="text-red-600"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={onLogout} className="text-red-600">
+          <LogOut className="mr-2 w-4 h-4" />
           <span>Cerrar Sesión</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

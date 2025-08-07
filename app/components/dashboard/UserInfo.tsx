@@ -14,7 +14,7 @@ export const UserInfo = (usuario: UserInfoProps) => {
     <div className="border-t p-4">
       <div className="flex items-center space-x-3">
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-utn-primary text-white text-sm">
+          <AvatarFallback className="bg-green-500/30 text-black text-sm px-1 py-1 rounded">
             {userInitials}
           </AvatarFallback>
         </Avatar>

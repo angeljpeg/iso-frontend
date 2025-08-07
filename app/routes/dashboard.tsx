@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/auth";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 
 // Importar componentes específicos por rol
-import { ProfesorDashboardContent } from "~/components/dashboard/ProfesorDashboardContent";
+import { ProfesorDashboardContent } from "~/components/dashboard/profesor-dashboard-content";
 import { DirectorDashboardContent } from "~/components/dashboard/DirectorDashboardContent";
 import { AdminDashboardContent } from "~/components/dashboard/AdminDashboardContent";
 

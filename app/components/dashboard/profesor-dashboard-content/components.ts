@@ -1,0 +1,8 @@
+export { FormatoCard } from './FormatoCard';
+export { SectionHeader } from './SectionHeader';
+export { LoadingState } from './LoadingState';
+export { ErrorState } from './ErrorState';
+export { EmptyState } from './EmptyState';
+export { FormatosSection } from './FormatosSection';
+export { GruposSection } from './GruposSection';
+export { ProfesorDashboardContent } from './index';

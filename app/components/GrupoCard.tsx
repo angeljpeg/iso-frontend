@@ -10,46 +10,58 @@ export function GrupoCard({ cargaAcademica, onClick }: GrupoCardProps) {
   const { grupo, asignatura } = cargaAcademica;
 
   return (
-    <Card 
-      onClick={onClick} 
-      isClickable={true} 
-      className="h-full group hover:border-[#3e9530]/50 relative overflow-hidden"
-      variant="elevated"
+    <Card
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      className="overflow-hidden relative p-5 h-full transition-all duration-300 ease-in-out cursor-pointer group hover:border-green-500/50"
     >
-      {/* Efecto de gradiente sutil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-green-50/30 opacity-0 group-hover:opacity-100 transition-smooth" />
-      
-      <div className="space-y-4 relative z-10">
-        {/* Nombre del grupo */}
-        <div className="flex items-start justify-between">
-          <h3 className="text-heading-md font-semibold text-gray-900 group-hover:text-[#3e9530] transition-smooth">
+      {/* Gradiente de hover */}
+      <div className="absolute inset-0 bg-gradient-to-br opacity-0 transition-all duration-300 ease-in-out from-blue-100/30 to-green-100/30 group-hover:opacity-100" />
+
+      <div className="relative z-10 p-2 space-y-4">
+        {/* Encabezado */}
+        <div className="flex justify-between items-start">
+          <h3 className="font-semibold text-gray-900 transition-all duration-300 ease-in-out text-heading-md group-hover:text-primary">
             🏷️ {grupo.nombreGenerado}
           </h3>
-          <div className="w-3 h-3 bg-[#3e9530] rounded-full opacity-0 group-hover:opacity-100 transition-smooth" />
+          <span className="w-3 h-3 bg-green-500 rounded-full opacity-0 transition-all duration-300 ease-in-out group-hover:opacity-100" />
         </div>
 
         {/* Asignatura */}
-        <div className="bg-gray-50 rounded-lg p-3 group-hover:bg-green-50/50 transition-smooth">
-          <p className="text-body-lg text-gray-700 font-medium">📚 {asignatura.nombre}</p>
+        <div className="p-3 bg-gray-50 rounded-lg transition-all duration-300 ease-in-out group-hover:bg-green-50/50">
+          <p className="font-medium text-gray-700 text-body-lg">
+            📚 {asignatura}
+          </p>
         </div>
 
         {/* Periodo */}
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-[#3b82f6] rounded-full" />
-          <p className="text-body-sm text-[#6b7280] font-medium">
+          <span className="w-2 h-2 bg-blue-500 rounded-full" />
+          <p className="font-medium text-gray-500 text-body-sm">
             🕒 {grupo.cuatrimestreRelacion.nombreGenerado}
           </p>
         </div>
 
         {/* Información adicional */}
-        <div className="pt-3 border-t border-gray-100 group-hover:border-green-200 transition-smooth">
-          <div className="flex items-center justify-between">
-            <p className="text-body-sm text-[#6b7280]">Carrera: {grupo.carrera}</p>
-            <div className="opacity-0 group-hover:opacity-100 transition-smooth">
-              <svg className="w-4 h-4 text-[#3e9530]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
+        <div className="pt-3 border-t border-gray-100 transition-all duration-300 ease-in-out group-hover:border-green-200">
+          <div className="flex justify-between items-center">
+            <p className="text-gray-500 text-body-sm">
+              Carrera: {grupo.carrera}
+            </p>
+            <svg
+              className="w-4 h-4 opacity-0 transition-all duration-300 ease-in-out text-primary group-hover:opacity-100"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </div>
         </div>
       </div>
