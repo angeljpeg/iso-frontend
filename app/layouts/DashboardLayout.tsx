@@ -1,8 +1,11 @@
 import { useAuthStore } from "../store/auth";
 import { useNavigate } from "react-router";
 import type { ReactNode } from "react";
-import { TopBarDashboard } from "~/components/dashboard/TopBarDashboard";
-import { SaludoCentral } from "~/components/dashboard/SaludoCentral";
+import { useState } from "react";
+import { Sheet, SheetContent } from "~/components/ui/sheet";
+import { DashboardSidebar } from "~/components/dashboard/DashboardSidebar";
+import { DashboardHeader } from "~/components/dashboard/DashboardHeader";
+import { WelcomeSection } from "~/components/dashboard/WelcomeSection";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -17,6 +20,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { usuario, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!usuario) {
     navigate("/login");
@@ -46,23 +50,53 @@ export function DashboardLayout({
   const { date, time } = getCurrentDateTime();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Topbar */}
-      <TopBarDashboard date={date} time={time} handleLogout={handleLogout} />
-
-      {/* Saludo Central */}
-      {needsSaludo && (
-        <SaludoCentral
-          apellido={usuario?.apellido}
-          nombre={usuario?.nombre}
-          title={title}
+    <div className="flex h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex">
+        <DashboardSidebar
+          nombre={usuario?.nombre || ""}
+          apellido={usuario?.apellido || ""}
+          email={usuario?.email || ""}
         />
-      )}
+      </div>
 
-      {/* Contenido Dinámico */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">{children}</div>
-      </main>
+      {/* Mobile Sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <DashboardSidebar
+            nombre={usuario?.nombre || ""}
+            apellido={usuario?.apellido || ""}
+            email={usuario?.email || ""}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <DashboardHeader
+          title={title}
+          date={date}
+          time={time}
+          onMobileMenuClick={() => setSidebarOpen(true)}
+          usuario={{
+            nombre: usuario?.nombre || "",
+            apellido: usuario?.apellido || "",
+            email: usuario?.email || "",
+          }}
+          onLogout={handleLogout}
+        />
+
+        {/* Welcome Section */}
+        {needsSaludo && (
+          <WelcomeSection nombre={usuario?.nombre || ""} title={title} />
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
