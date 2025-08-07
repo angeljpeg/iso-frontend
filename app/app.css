@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Colores Institucionales UTN */
+  --utn-primary: #3e9530;
+  --utn-primary-light: #52b342;
+  --utn-primary-dark: #2d6e23;
+  --color-secondary: #6b7280;
+  --color-accent: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Espaciado según reglas */
+  --spacing-elements: 16px;
+  --spacing-containers: 24px;
+}
+
+html,
+body {
+  @apply bg-white dark:bg-gray-950;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+}
+
+/* Tamaños de fuente según reglas */
+.text-heading-lg {
+  font-size: 24px;
+}
+.text-heading-md {
+  font-size: 20px;
+}
+.text-heading-sm {
+  font-size: 18px;
+}
+.text-body-lg {
+  font-size: 16px;
+}
+.text-body-sm {
+  font-size: 14px;
+}
+.text-button {
+  font-size: 14px;
+}
+
+.text-utn-primary {
+  color: var(--utn-primary);
+}
+
+.bg-utn-primary {
+  background-color: var(--utn-primary);
+}
+
+.border-utn-primary {
+  border-color: var(--utn-primary);
+}
+
+/* Transiciones suaves personalizadas */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animaciones para modales */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-exit {
+  animation: modalFadeOut 0.3s ease-in;
+}
