@@ -8,7 +8,7 @@ interface DateTimeDisplayProps {
 
 export function DateTimeDisplay({ date, time }: DateTimeDisplayProps) {
   return (
-    <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+    <div className="hidden text-black sm:flex items-center space-x-2 text-sm">
       <Calendar className="h-4 w-4" />
       <span className="capitalize">{date}</span>
       <Separator orientation="vertical" className="h-4" />

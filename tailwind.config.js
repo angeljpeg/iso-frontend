@@ -48,6 +48,16 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Agregar colores UTN
+        'utn-primary': {
+          DEFAULT: 'var(--utn-primary)',
+          light: 'var(--utn-primary-light)',
+          dark: 'var(--utn-primary-dark)',
+        },
+        'utn-secondary': 'var(--color-secondary)',
+        'utn-success': 'var(--color-success)',
+        'utn-warning': 'var(--color-warning)',
+        'utn-error': 'var(--color-error)',
       },
       borderRadius: {
         lg: "var(--radius)",
