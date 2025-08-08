@@ -8,7 +8,6 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { EstadoBadge } from "../components/ui/EstadoBadge";
 import { IndicadorRetraso } from "../components/ui/IndicadorRetraso";
-import { ModalJustificacion } from "../components/ui/ModalJustificacion";
 import type { AvanceSemana, NivelRetraso } from "../types/seguimiento";
 
 export default function SeguimientoPage() {
@@ -415,17 +414,6 @@ export default function SeguimientoPage() {
           )}
         </div>
       </main>
-
-      {/* Modal de justificación */}
-      <ModalJustificacion
-        isOpen={modalJustificacion.isOpen}
-        onClose={() =>
-          setModalJustificacion({ isOpen: false, semana: 0, temaEsperado: "" })
-        }
-        onConfirm={handleConfirmarJustificacion}
-        semana={modalJustificacion.semana}
-        temaEsperado={modalJustificacion.temaEsperado}
-      />
     </div>
   );
 }

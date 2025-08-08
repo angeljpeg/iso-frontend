@@ -5,19 +5,37 @@ import { Pagination } from "~/components/ui/pagination";
 import type { ColumnDef } from "@tanstack/react-table";
 import { type Usuario, RolUsuario } from "~/types/usuarios";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui";
+import { ArrowUpDown } from "lucide-react";
 
 const columns: ColumnDef<Usuario>[] = [
   {
     accessorKey: "nombre",
-    header: "Nombre",
-    cell: ({ row }) => {
-      const usuario = row.original;
-      return `${usuario.nombre} ${usuario.apellido}`;
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Nombre
+          <ArrowUpDown className="ml-2 w-4 h-4" />
+        </Button>
+      );
     },
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 w-4 h-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "rol",
@@ -66,7 +84,7 @@ export function UsuariosTable() {
     updatePage,
     clearFilters,
   } = useUsuarios({
-    limit: 10,
+    limit: 2,
     page: 1,
   });
 
