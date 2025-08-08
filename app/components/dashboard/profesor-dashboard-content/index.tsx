@@ -1,7 +1,7 @@
 import { useCargaAcademica } from "../../../hooks/useCargaAcademica";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../../../store/auth";
-import { FORMATOS_ISO, type FormatoCard } from "../../../types/formatos";
+import { FORMATOS_ISO } from "../../../types/formatos";
 import { FormatosSection } from "./FormatosSection";
 import { GruposSection } from "./GruposSection";
 
@@ -19,12 +19,6 @@ export function ProfesorDashboardContent() {
         : formato.disponible,
   }));
 
-  const handleFormatoClick = (formato: FormatoCard) => {
-    if (formato.disponible) {
-      navigate(formato.ruta);
-    }
-  };
-
   const handleGrupoClick = (grupoId: string) => {
     navigate(`/grupo/${grupoId}`);
   };
@@ -36,12 +30,9 @@ export function ProfesorDashboardContent() {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      <FormatosSection
-        formatos={formatosDisponibles}
-        onFormatoClick={handleFormatoClick}
-      />
-      
+    <div className="mx-auto space-y-8 max-w-7xl">
+      <FormatosSection formatos={formatosDisponibles} />
+
       <GruposSection
         cargasAcademicas={cargasAcademicas}
         isLoading={isLoading}

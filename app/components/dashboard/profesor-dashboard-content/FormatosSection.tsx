@@ -5,10 +5,9 @@ import type { FormatoCard as FormatoCardType } from "~/types/formatos";
 
 interface FormatosSectionProps {
   formatos: FormatoCardType[];
-  onFormatoClick: (formato: FormatoCardType) => void;
 }
 
-export function FormatosSection({ formatos, onFormatoClick }: FormatosSectionProps) {
+export function FormatosSection({ formatos }: FormatosSectionProps) {
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -17,13 +16,9 @@ export function FormatosSection({ formatos, onFormatoClick }: FormatosSectionPro
         icon={<FileText />}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {formatos.map((formato) => (
-          <FormatoCard
-            key={formato.id}
-            formato={formato}
-            onClick={onFormatoClick}
-          />
+          <FormatoCard key={formato.id} formato={formato} />
         ))}
       </div>
     </div>

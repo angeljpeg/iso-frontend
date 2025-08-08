@@ -34,7 +34,7 @@ export const FORMATOS_ISO: FormatoCard[] = [
     descripcion: "Gestiona y reporta las actividades de tutoría estudiantil",
     icono: "🎓",
     ruta: "/tutorias",
-    disponible: false, // Se determinará dinámicamente según el rol
+    disponible: true, // Se determinará dinámicamente según el rol
     color: "bg-purple-50 border-purple-200 hover:bg-purple-100",
   },
   {

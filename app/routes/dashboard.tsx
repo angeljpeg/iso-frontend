@@ -5,9 +5,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 
 // Importar componentes específicos por rol
 import { ProfesorDashboardContent } from "~/components/dashboard/profesor-dashboard-content";
-import { DirectorDashboardContent } from "~/components/dashboard/DirectorDashboardContent";
 import { CoordinadorDashboardContent } from "~/components/dashboard/CoordinadorDashboardContent";
-import { AdminDashboardContent } from "~/components/dashboard/AdminDashboardContent";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -35,11 +33,8 @@ export default function DashboardPage() {
       case "profesor_tiempo_completo":
       case "profesor_asignatura":
         return "Dashboard de Profesor";
-      case "director":
       case "coordinador":
-        return "Dashboard de Director/Coordinador";
-      case "admin":
-        return "Dashboard de Administrador";
+        return "Dashboard de Coordinador";
       default:
         return "Dashboard";
     }
@@ -88,14 +83,8 @@ export default function DashboardPage() {
       case "profesor_asignatura":
         return <ProfesorDashboardContent />;
 
-      case "director":
-        return <DirectorDashboardContent />;
-
       case "coordinador":
         return <CoordinadorDashboardContent />;
-
-      case "admin":
-        return <AdminDashboardContent />;
 
       default:
         return (
