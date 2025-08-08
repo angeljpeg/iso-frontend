@@ -1,5 +1,7 @@
 import { DataTable } from "~/components/ui/tables/data-table";
 import { useUsuarios } from "~/hooks/useUsuarios";
+import { UsuariosFilters } from "./usuarios-filters";
+import { Pagination } from "~/components/ui/pagination";
 import type { ColumnDef } from "@tanstack/react-table";
 import { type Usuario, RolUsuario } from "~/types/usuarios";
 import { Badge } from "~/components/ui/badge";
@@ -54,12 +56,38 @@ const columns: ColumnDef<Usuario>[] = [
 ];
 
 export function UsuariosTable() {
-  const options = {
+  const {
+    usuarios,
+    isLoading,
+    error,
+    pagination,
+    options,
+    updateFilters,
+    updatePage,
+    clearFilters,
+  } = useUsuarios({
     limit: 10,
     page: 1,
+  });
+
+  const handleSearch = (search: string) => {
+    updateFilters({ search: search || undefined });
   };
 
-  const { usuarios, isLoading, error } = useUsuarios(options);
+  const handleFilterChange = (filters: {
+    rol?: RolUsuario;
+    estado?: boolean;
+  }) => {
+    updateFilters(filters);
+  };
+
+  const handleClearFilters = () => {
+    clearFilters();
+  };
+
+  const handlePageChange = (page: number) => {
+    updatePage(page);
+  };
 
   if (isLoading) {
     return (
@@ -84,9 +112,33 @@ export function UsuariosTable() {
   }
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Usuarios</h1>
-      <DataTable columns={columns} data={usuarios} />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Usuarios</h1>
+      </div>
+
+      <UsuariosFilters
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+        currentFilters={{
+          search: options.search || "",
+          rol: options.rol,
+          estado: options.estado,
+        }}
+      />
+
+      <div className="bg-white rounded-lg border">
+        <DataTable columns={columns} data={usuarios} />
+
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+          totalItems={pagination.total}
+          itemsPerPage={pagination.limit}
+        />
+      </div>
     </div>
   );
 }

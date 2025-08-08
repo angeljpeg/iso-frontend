@@ -13,12 +13,17 @@ interface UseUsuariosOptions {
   limit?: number;
 }
 
-export function useUsuarios(options: UseUsuariosOptions = {}) {
+export function useUsuarios(initialOptions: UseUsuariosOptions = {}) {
   const navigate = useNavigate();
   const { accessToken } = useAuthStore();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [options, setOptions] = useState<UseUsuariosOptions>({
+    page: 1,
+    limit: 10,
+    ...initialOptions,
+  });
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -45,7 +50,7 @@ export function useUsuarios(options: UseUsuariosOptions = {}) {
 
       const response: GetAllUsuariosResponse = await getAllUsuarios({
         token: accessToken,
-        ...options,
+        ...memoizedOptions,
       });
 
       setUsuarios(response.data);
@@ -75,11 +80,37 @@ export function useUsuarios(options: UseUsuariosOptions = {}) {
     fetchUsuarios();
   }, [fetchUsuarios]);
 
+  const updateFilters = useCallback(
+    (newFilters: Partial<UseUsuariosOptions>) => {
+      setOptions((prev) => ({
+        ...prev,
+        ...newFilters,
+        page: newFilters.page !== undefined ? newFilters.page : 1, // Reset a página 1 cuando cambian filtros
+      }));
+    },
+    []
+  );
+
+  const updatePage = useCallback((page: number) => {
+    setOptions((prev) => ({ ...prev, page }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setOptions({
+      page: 1,
+      limit: options.limit,
+    });
+  }, [options.limit]);
+
   return {
     usuarios,
     isLoading,
     error,
     pagination,
+    options,
+    updateFilters,
+    updatePage,
+    clearFilters,
     refetch: fetchUsuarios,
   };
 }
