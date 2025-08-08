@@ -1,64 +1,89 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { useAuthStore } from "../store/auth";
-import { DashboardLayout } from "../layouts/DashboardLayout";
-import { Button } from "../components/ui/Button";
+import React from 'react';
+import { useEstadias } from '../hooks/useEstadias';
+import { Card, Button } from '../components/ui';
+import { Badge } from '../components/ui/badge';
 
 export default function EstadiasPage() {
-  const navigate = useNavigate();
-  const { usuario, isAuthenticated } = useAuthStore();
+  const { estadias, loading, error } = useEstadias();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Cargando estadías...</div>
+      </div>
+    );
+  }
 
-    if (
-      usuario?.rol !== "profesor_tiempo_completo" &&
-      usuario?.rol !== "profesor_asignatura"
-    ) {
-      navigate("/dashboard");
-      return;
-    }
-  }, [isAuthenticated, usuario?.rol, navigate]);
-
-  if (!isAuthenticated) {
-    return null;
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600">Error: {error}</div>
+      </div>
+    );
   }
 
   return (
-    <DashboardLayout title="Reporte Mensual de Avances de Estadías">
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                📊 Reporte Mensual de Avances de Estadías
-              </h3>
-              <p className="text-gray-600">
-                Seguimiento mensual del progreso de estudiantes en estadías
-              </p>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/dashboard")}
-            >
-              ← Volver al Dashboard
-            </Button>
-          </div>
-        </div>
-
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <div className="text-4xl mb-4">🚧</div>
-          <h4 className="text-lg font-semibold text-yellow-800 mb-2">
-            Módulo en Desarrollo
-          </h4>
-          <p className="text-yellow-700">
-            El módulo de Reporte Mensual de Avances de Estadías estará disponible próximamente.
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Control de Estadías</h1>
+        <Button variant="default">
+          Nueva Estadía
+        </Button>
       </div>
-    </DashboardLayout>
+
+      {estadias.length === 0 ? (
+        <Card className="p-8 text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No hay estadías registradas
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Comienza creando una nueva estadía para llevar el control de tus alumnos.
+          </p>
+          <Button variant="default">
+            Crear Primera Estadía
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {estadias.map((estadia) => (
+            <Card key={estadia.id} className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {estadia.nombreProfesor}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Período: {estadia.periodo}
+                  </p>
+                </div>
+                <Badge variant={estadia.activo ? "default" : "secondary"}>
+                  {estadia.activo ? "Activa" : "Inactiva"}
+                </Badge>
+              </div>
+
+              {estadia.observacionesGenerales && (
+                <p className="text-sm text-gray-600 mb-4">
+                  {estadia.observacionesGenerales}
+                </p>
+              )}
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  {estadia.alumnos?.length || 0} alumnos
+                </span>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    Ver Detalles
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
