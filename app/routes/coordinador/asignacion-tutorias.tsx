@@ -1,7 +1,11 @@
-export const AsignacionTutorias = () => {
+import { DashboardLayout } from "~/layouts/DashboardLayout";
+
+export default function AsignacionTutoriasPage() {
   return (
-    <div>
-      <h1>Asignación de Tutorias</h1>
-    </div>
+    <DashboardLayout title="Asignación de Tutorias" needsSaludo={false}>
+      <div>
+        <h1>Asignación de Tutorias</h1>
+      </div>
+    </DashboardLayout>
   );
-};
+}

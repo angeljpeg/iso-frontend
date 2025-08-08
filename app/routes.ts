@@ -11,4 +11,22 @@ export default [
   route("seguimientos", "routes/seguimientos.tsx"),
   route("grupo/:grupoId", "routes/grupo.tsx"),
   route("asignatura/:asignaturaId", "routes/asignatura.tsx"),
+
+  // COORDINADOR
+  route(
+    "coordinador/gestion-usuarios",
+    "routes/coordinador/gestion-usuarios.tsx"
+  ),
+  route(
+    "coordinador/asignacion-cargas",
+    "routes/coordinador/asignacion-cargas.tsx"
+  ),
+  route(
+    "coordinador/asignacion-estadias",
+    "routes/coordinador/asignacion-estadias.tsx"
+  ),
+  route(
+    "coordinador/asignacion-tutorias",
+    "routes/coordinador/asignacion-tutorias.tsx"
+  ),
 ] satisfies RouteConfig;

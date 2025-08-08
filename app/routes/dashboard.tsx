@@ -5,7 +5,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 
 // Importar componentes específicos por rol
 import { ProfesorDashboardContent } from "~/components/dashboard/profesor-dashboard-content";
-import { CoordinadorDashboardContent } from "~/components/dashboard/CoordinadorDashboardContent";
+import { CoordinadorDashboardContent } from "~/components/dashboard/coordinador-dashboard-content";
 
 export default function DashboardPage() {
   const navigate = useNavigate();

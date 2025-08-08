@@ -1,7 +1,11 @@
-export const AsignacionEstadias = () => {
+import { DashboardLayout } from "~/layouts/DashboardLayout";
+
+export default function AsignacionEstadiasPage() {
   return (
-    <div>
-      <h1>Asignación de Estadias</h1>
-    </div>
+    <DashboardLayout title="Asignación de Estadias" needsSaludo={false}>
+      <div>
+        <h1>Asignación de Estadias</h1>
+      </div>
+    </DashboardLayout>
   );
-};
+}

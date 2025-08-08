@@ -24,7 +24,7 @@ export const ConfiguracionRapida = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onClick("/coordinador/usuarios")}
+            onClick={() => onClick("/coordinador/gestion-usuarios")}
           >
             Gestionar usuarios →
           </Button>
