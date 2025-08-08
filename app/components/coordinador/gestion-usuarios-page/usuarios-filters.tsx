@@ -2,17 +2,17 @@ import { useState } from "react";
 import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 import { FormSelect } from "~/components/ui/forms/FormSelect";
-import { RolUsuario } from "~/types/usuarios";
+import { RolUsuarioEnum, type RolUsuarioType } from "~/types/usuarios";
 import { Search, X } from "lucide-react";
 
 interface UsuariosFiltersProps {
   onSearch: (search: string) => void;
-  onFilterChange: (filters: { rol?: RolUsuario; estado?: boolean }) => void;
+  onFilterChange: (filters: { rol?: RolUsuarioType; activo?: boolean }) => void;
   onClearFilters: () => void;
   currentFilters: {
     search: string;
-    rol?: RolUsuario;
-    estado?: boolean;
+    rol?: RolUsuarioType;
+    activo?: boolean;
   };
 }
 
@@ -23,22 +23,22 @@ export function UsuariosFilters({
   currentFilters,
 }: UsuariosFiltersProps) {
   const [searchValue, setSearchValue] = useState(currentFilters.search);
-  const [selectedRol, setSelectedRol] = useState<RolUsuario | "">(
+  const [selectedRol, setSelectedRol] = useState<RolUsuarioType | "">(
     currentFilters.rol || ""
   );
   const [selectedEstado, setSelectedEstado] = useState<string>(
-    currentFilters.estado !== undefined ? currentFilters.estado.toString() : ""
+    currentFilters.activo !== undefined ? currentFilters.activo.toString() : ""
   );
 
   const rolOptions = [
     { value: "", label: "Todos los roles" },
-    { value: RolUsuario.COORDINADOR, label: "Coordinador" },
-    { value: RolUsuario.MODERADOR, label: "Moderador" },
+    { value: RolUsuarioEnum.COORDINADOR, label: "Coordinador" },
+    { value: RolUsuarioEnum.MODERADOR, label: "Moderador" },
     {
-      value: RolUsuario.PROFESOR_TIEMPO_COMPLETO,
+      value: RolUsuarioEnum.PROFESOR_TIEMPO_COMPLETO,
       label: "Profesor Tiempo Completo",
     },
-    { value: RolUsuario.PROFESOR_ASIGNATURA, label: "Profesor Asignatura" },
+    { value: RolUsuarioEnum.PROFESOR_ASIGNATURA, label: "Profesor Asignatura" },
   ];
 
   const estadoOptions = [
@@ -52,10 +52,10 @@ export function UsuariosFilters({
   };
 
   const handleRolChange = (value: string) => {
-    setSelectedRol(value as RolUsuario | "");
+    setSelectedRol(value as RolUsuarioType | "");
     onFilterChange({
-      rol: value ? (value as RolUsuario) : undefined,
-      estado: selectedEstado ? selectedEstado === "true" : undefined,
+      rol: value ? (value as RolUsuarioType) : undefined,
+      activo: selectedEstado ? selectedEstado === "true" : undefined,
     });
   };
 
@@ -63,7 +63,7 @@ export function UsuariosFilters({
     setSelectedEstado(value);
     onFilterChange({
       rol: selectedRol || undefined,
-      estado: value ? value === "true" : undefined,
+      activo: value === "" ? undefined : value === "true",
     });
   };
 

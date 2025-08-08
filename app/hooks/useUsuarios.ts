@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { getAllUsuarios } from "~/services/coordinadores/usuarios.service";
 import { useAuthStore } from "~/store/auth";
-import type { Usuario, RolUsuario } from "~/types/usuarios";
+import type { Usuario, RolUsuarioType } from "~/types/usuarios";
 import type { GetAllUsuariosResponse } from "~/types/usuarios/services/get-all";
 
 interface UseUsuariosOptions {
-  rol?: RolUsuario;
-  estado?: boolean;
+  rol?: RolUsuarioType;
+  activo?: boolean;
   search?: string;
   page?: number;
   limit?: number;
@@ -34,7 +34,7 @@ export function useUsuarios(initialOptions: UseUsuariosOptions = {}) {
   // Memoizar las options para evitar re-renders innecesarios
   const memoizedOptions = useMemo(
     () => options,
-    [options.rol, options.estado, options.search, options.page, options.limit]
+    [options.rol, options.activo, options.search, options.page, options.limit]
   );
 
   const fetchUsuarios = useCallback(async () => {

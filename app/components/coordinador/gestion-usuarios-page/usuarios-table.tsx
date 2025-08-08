@@ -3,10 +3,16 @@ import { useUsuarios } from "~/hooks/useUsuarios";
 import { UsuariosFilters } from "./usuarios-filters";
 import { Pagination } from "~/components/ui/pagination";
 import type { ColumnDef } from "@tanstack/react-table";
-import { type Usuario, RolUsuario } from "~/types/usuarios";
+import {
+  type RolUsuarioType,
+  type Usuario,
+  RolUsuarioEnum,
+} from "~/types/usuarios";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui";
 import { ArrowUpDown } from "lucide-react";
+import { useState } from "react";
+import { CrearUsuariosModal } from "./crear-usuarios-modal";
 
 const columns: ColumnDef<Usuario>[] = [
   {
@@ -41,12 +47,12 @@ const columns: ColumnDef<Usuario>[] = [
     accessorKey: "rol",
     header: "Rol",
     cell: ({ row }) => {
-      const rol = row.getValue("rol") as RolUsuario;
+      const rol = row.getValue("rol") as RolUsuarioType;
       const rolLabels = {
-        [RolUsuario.COORDINADOR]: "Coordinador",
-        [RolUsuario.MODERADOR]: "Moderador",
-        [RolUsuario.PROFESOR_TIEMPO_COMPLETO]: "Profesor Tiempo Completo",
-        [RolUsuario.PROFESOR_ASIGNATURA]: "Profesor Asignatura",
+        [RolUsuarioEnum.COORDINADOR]: "Coordinador",
+        [RolUsuarioEnum.MODERADOR]: "Moderador",
+        [RolUsuarioEnum.PROFESOR_TIEMPO_COMPLETO]: "Profesor Tiempo Completo",
+        [RolUsuarioEnum.PROFESOR_ASIGNATURA]: "Profesor Asignatura",
       };
       return <Badge variant="outline">{rolLabels[rol] || rol}</Badge>;
     },
@@ -88,12 +94,15 @@ export function UsuariosTable() {
     page: 1,
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { refetch } = useUsuarios();
+
   const handleSearch = (search: string) => {
     updateFilters({ search: search || undefined });
   };
 
   const handleFilterChange = (filters: {
-    rol?: RolUsuario;
+    rol?: RolUsuarioType;
     estado?: boolean;
   }) => {
     updateFilters(filters);
@@ -136,8 +145,14 @@ export function UsuariosTable() {
           <h1 className="text-2xl font-bold">Usuarios</h1>
         </div>
 
-        <Button>Crear Usuario</Button>
+        <Button onClick={() => setIsModalOpen(true)}>Crear Usuario</Button>
       </header>
+
+      <CrearUsuariosModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSuccess={refetch}
+      />
 
       <UsuariosFilters
         onSearch={handleSearch}

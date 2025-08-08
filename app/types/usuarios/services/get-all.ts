@@ -1,9 +1,9 @@
-import type { RolUsuario, Usuario } from "..";
+import type { RolUsuarioType, Usuario } from "..";
 
 export interface GetAllUsuariosRequest {
   token: string;
-  rol?: RolUsuario;
-  estado?: boolean;
+  rol?: RolUsuarioType;
+  activo?: boolean;
   search?: string;
   page?: number;
   limit?: number;
