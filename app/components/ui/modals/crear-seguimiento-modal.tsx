@@ -13,6 +13,7 @@ interface CrearSeguimientoModalProps {
   tema: Tema | null;
   cargaAcademicaId: string;
   cuatrimestreId: string;
+  onSeguimientoCreated?: () => void; // Agregar esta prop
 }
 
 export function CrearSeguimientoModal({
@@ -21,6 +22,7 @@ export function CrearSeguimientoModal({
   tema,
   cargaAcademicaId,
   cuatrimestreId,
+  onSeguimientoCreated,
 }: CrearSeguimientoModalProps) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -102,8 +104,9 @@ export function CrearSeguimientoModal({
       }
 
       // Éxito - cerrar modal y mostrar mensaje
+      // Después del éxito:
       onClose();
-      // Aquí podrías mostrar un toast de éxito
+      onSeguimientoCreated?.(); // Llamar callback si existe
       console.log("Seguimiento creado exitosamente");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");

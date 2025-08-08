@@ -5,6 +5,9 @@ import { TemaCard } from "../components/TemaCard";
 import { Button } from "../components/ui/Button";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { useModal } from "../hooks/use-modal";
+import { CrearSeguimientoModal } from "../components/ui/modals/crear-seguimiento-modal";
+import { useModalContext } from "../contexts/modal-context";
 import type { Tema } from "../types/carga-academica";
 
 export default function AsignaturaPage() {
@@ -14,8 +17,24 @@ export default function AsignaturaPage() {
     asignaturaId!
   );
 
+  // Modal hooks
+  const { isOpen, openModal, closeModal } = useModal();
+  const { showAlert } = useModalContext();
+  const [selectedTema, setSelectedTema] = useState<Tema | null>(null);
+
   const handleTemaClick = (tema: Tema) => {
     console.log("Tema clicked:", tema.nombre);
+    setSelectedTema(tema);
+    openModal();
+  };
+
+  const handleSeguimientoCreated = () => {
+    closeModal();
+    setSelectedTema(null);
+    showAlert(
+      "Seguimiento creado",
+      "El seguimiento se ha creado exitosamente."
+    );
   };
 
   if (isLoading) {
@@ -157,7 +176,6 @@ export default function AsignaturaPage() {
                     key={`${tema.nombre}-${tema.unidad}-${index}`}
                     className="flex flex-col justify-between p-4 h-full bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow duration-200 hover:shadow-md"
                   >
-                    {/* Tarjeta del tema */}
                     <div className="flex-1">
                       <TemaCard
                         tema={tema}
@@ -180,6 +198,16 @@ export default function AsignaturaPage() {
             )}
           </div>
         </div>
+
+        {/* Modal para crear seguimiento */}
+        <CrearSeguimientoModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          tema={selectedTema}
+          cargaAcademicaId={cargaAcademica?.id || ""}
+          cuatrimestreId={cargaAcademica?.cuatrimestreId || ""}
+          onSeguimientoCreated={handleSeguimientoCreated}
+        />
       </DashboardLayout>
     </ProtectedRoute>
   );
