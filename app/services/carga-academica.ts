@@ -50,8 +50,8 @@ class CargaAcademicaService {
     );
   }
 
-  async getTemasByAsignatura(asignaturaId: string): Promise<Asignatura> {
-    return this.makeRequest<Asignatura>(`/asignaturas/${asignaturaId}`, {
+  async getAsignaturas(nombre: string): Promise<Asignatura[]> {
+    return this.makeRequest<Asignatura[]>(`/asignatura/${nombre}/temas`, {
       method: "GET",
     });
   }
