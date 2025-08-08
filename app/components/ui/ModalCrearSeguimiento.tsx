@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { getAuthHeaders, handleAuthError } from "../../utils/auth";
+import { getAuthHeaders, handleAuthErrorWithStatus } from "~/utils/auth";
 import type { Tema } from "../../types/carga-academica";
 import type { CreateSeguimientoCursoDto } from "../../types/seguimientos";
 import { EstadoAvance } from "../../types/enums";
@@ -107,7 +107,7 @@ export function ModalCrearSeguimiento({
       );
 
       if (!response.ok) {
-        handleAuthError(response.status);
+        handleAuthErrorWithStatus(response.status);
         const errorData = await response.json();
         throw new Error(errorData.message || "Error al crear el seguimiento");
       }

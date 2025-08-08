@@ -42,9 +42,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { ModalProvider } from "~/contexts/modal-context";
+
 export default function App() {
-  useRefreshToken();
-  return <Outlet />;
+  return (
+    <html>
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <ModalProvider>
+          <Outlet />
+        </ModalProvider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -64,11 +79,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
+    <main className="container p-4 pt-16 mx-auto">
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
+        <pre className="overflow-x-auto p-4 w-full">
           <code>{stack}</code>
         </pre>
       )}

@@ -18,7 +18,15 @@ export function getAuthHeaders(): Record<string, string> {
   };
 }
 
-export function handleAuthError(status: number): void {
+// Updated function to handle navigation
+export function handleAuthError(navigate: (path: string) => void): void {
+  // Token inválido o expirado
+  useAuthStore.getState().logout();
+  navigate("/login");
+}
+
+// Keep the old function for backward compatibility with services
+export function handleAuthErrorWithStatus(status: number): void {
   if (status === 401) {
     // Token inválido o expirado
     useAuthStore.getState().logout();

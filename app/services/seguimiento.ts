@@ -5,7 +5,11 @@ import type {
   NotificacionSeguimiento,
 } from "../types/seguimiento";
 import type { AuthError } from "../types/auth";
-import { getAuthHeaders, handleAuthError } from "../utils/auth";
+import {
+  getAuthHeaders,
+  handleAuthError,
+  handleAuthErrorWithStatus,
+} from "../utils/auth";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -27,7 +31,7 @@ class SeguimientoService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      handleAuthError(response.status);
+      handleAuthErrorWithStatus(response.status);
 
       const error: AuthError = await response.json();
       throw new Error(error.message || "Error en la solicitud");
@@ -198,7 +202,7 @@ class SeguimientoService {
     });
 
     if (!response.ok) {
-      handleAuthError(response.status);
+      handleAuthErrorWithStatus(response.status);
       const error: AuthError = await response.json();
       throw new Error(error.message || "Error al exportar");
     }
