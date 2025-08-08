@@ -9,6 +9,11 @@ export interface CreateUsuarioRequest {
   password: string;
 }
 
-export interface UpdateUsuarioRequest extends Partial<CreateUsuarioRequest> {}
+export interface UpdateUsuarioRequest
+  extends Partial<Omit<CreateUsuarioRequest, "password">> {
+  id: string;
+}
 
 export interface CreateUsuarioResponse extends Usuario {}
+
+export interface UpdateUsuarioResponse extends Usuario {}

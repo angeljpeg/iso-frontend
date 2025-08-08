@@ -1,13 +1,18 @@
 import type {
   CreateUsuarioRequest,
   CreateUsuarioResponse,
+  UpdateUsuarioRequest,
+  UpdateUsuarioResponse,
 } from "~/types/usuarios/services";
 import { API_BASE_URL } from "../api-config";
 import type {
   GetAllUsuariosRequest,
   GetAllUsuariosResponse,
 } from "~/types/usuarios/services/get-all";
-import type { DeactivateUsuarioRequest } from "~/types/usuarios/services/delete";
+import type {
+  DeactivateUsuarioRequest,
+  ReactivateUsuarioRequest,
+} from "~/types/usuarios/services/delete";
 
 const USUARIOS_URL = `${API_BASE_URL}/usuarios`;
 
@@ -84,6 +89,38 @@ export const createUsuario = async (
   }
 };
 
+export const updateUsuario = async (
+  request: UpdateUsuarioRequest
+): Promise<UpdateUsuarioResponse> => {
+  try {
+    const { token, id, ...userData } = request;
+
+    const response = await fetch(`${USUARIOS_URL}/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error updating usuario: ${response.status} ${response.statusText}`
+      );
+    }
+
+    if (!response.headers.get("content-type")?.includes("application/json")) {
+      throw new Error("Respuesta no es JSON válida");
+    }
+
+    return (await response.json()) as UpdateUsuarioResponse;
+  } catch (error) {
+    console.error("Error updating usuario:", error);
+    throw error instanceof Error ? error : new Error(String(error));
+  }
+};
+
 export const deactivateUsuario = async (
   request: DeactivateUsuarioRequest
 ): Promise<void> => {
@@ -91,7 +128,7 @@ export const deactivateUsuario = async (
     const { token, id } = request;
 
     const response = await fetch(`${USUARIOS_URL}/${id}/deactivate`, {
-      method: "POST",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -109,6 +146,35 @@ export const deactivateUsuario = async (
     }
   } catch (error) {
     console.error("Error deactivating usuario:", error);
+    throw error instanceof Error ? error : new Error(String(error));
+  }
+};
+
+export const reactivateUsuario = async (
+  request: ReactivateUsuarioRequest
+): Promise<void> => {
+  try {
+    const { token, id } = request;
+
+    const response = await fetch(`${USUARIOS_URL}/${id}/reactivate`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error reactivating usuario: ${response.status} ${response.statusText}`
+      );
+    }
+
+    if (!response.headers.get("content-type")?.includes("application/json")) {
+      throw new Error("Respuesta no es JSON válida");
+    }
+  } catch (error) {
+    console.error("Error reactivating usuario:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };

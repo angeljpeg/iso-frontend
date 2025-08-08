@@ -10,9 +10,15 @@ import {
 } from "~/types/usuarios";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Edit, Trash2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { CrearUsuariosModal } from "./crear-usuarios-modal";
+import { useAuthStore } from "~/store/auth";
+import {
+  deactivateUsuario,
+  reactivateUsuario,
+} from "~/services/coordinadores/usuarios.service";
+import { toast } from "sonner";
 
 const columns: ColumnDef<Usuario>[] = [
   {
@@ -89,6 +95,90 @@ const columns: ColumnDef<Usuario>[] = [
     cell: ({ row }) => {
       const fecha = new Date(row.getValue("createdAt") as Date);
       return fecha.toLocaleDateString("es-ES");
+    },
+  },
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      const usuario = row.original;
+      const { accessToken } = useAuthStore();
+      const [isLoading, setIsLoading] = useState(false);
+
+      const handleDeactivate = async () => {
+        if (!accessToken) return;
+
+        try {
+          setIsLoading(true);
+          await deactivateUsuario({ token: accessToken, id: usuario.id });
+          toast.success("Usuario desactivado exitosamente");
+          // Refetch usuarios
+          window.location.reload(); // Temporal, mejor usar refetch del hook
+        } catch (error) {
+          console.error("Error reactivando usuario:", error);
+          toast.error("Error al desactivar usuario");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      const handleReactivate = async () => {
+        if (!accessToken) return;
+
+        try {
+          setIsLoading(true);
+          await reactivateUsuario({ token: accessToken, id: usuario.id });
+          toast.success("Usuario reactivado exitosamente");
+          // Refetch usuarios
+          window.location.reload(); // Temporal, mejor usar refetch del hook
+        } catch (error) {
+          console.error("Error reactivando usuario:", error);
+          toast.error("Error al reactivar usuario");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      const handleEdit = () => {
+        // Implementar modal de edición
+        toast.info("Función de edición en desarrollo");
+      };
+
+      return (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEdit}
+            disabled={!usuario.activo || isLoading}
+            className="p-0 w-8 h-8"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+
+          {usuario.activo ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeactivate}
+              disabled={isLoading}
+              className="p-0 w-8 h-8"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleReactivate}
+              disabled={isLoading}
+              className="p-0 w-8 h-8"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      );
     },
   },
 ];

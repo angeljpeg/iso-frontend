@@ -1,9 +1,9 @@
 export interface DeactivateUsuarioRequest {
   token: string;
-  id: number;
+  id: string;
 }
 
 export interface ReactivateUsuarioRequest {
   token: string;
-  id: number;
+  id: string;
 }
