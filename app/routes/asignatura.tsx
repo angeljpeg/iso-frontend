@@ -247,6 +247,27 @@ export default function AsignaturaPage() {
           )}
         </div>
       </DashboardLayout>
+
+      {/* Modales */}
+      {isCoordinador && (
+        <CrearSeguimientoModal
+          isOpen={isCrearOpen}
+          onClose={closeCrear}
+          tema={selectedTema!}
+          cargaAcademicaId={cargaAcademica?.id || ""}
+          onSeguimientoCreated={handleSeguimientoCreated}
+        />
+      )}
+
+      {isProfesor && (
+        <AgregarDetalleModal
+          isOpen={isDetalleOpen}
+          onClose={closeDetalle}
+          tema={selectedTema}
+          seguimientoId={seguimientoId}
+          onDetalleCreated={handleDetalleCreated}
+        />
+      )}
     </ProtectedRoute>
   );
 }
