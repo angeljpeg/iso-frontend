@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { getAllUsuarios } from "~/services/coordinadores/usuarios.service";
 import { useAuthStore } from "~/store/auth";
@@ -25,6 +25,12 @@ export function useUsuarios(options: UseUsuariosOptions = {}) {
     limit: 10,
     totalPages: 0,
   });
+
+  // Memoizar las options para evitar re-renders innecesarios
+  const memoizedOptions = useMemo(
+    () => options,
+    [options.rol, options.estado, options.search, options.page, options.limit]
+  );
 
   const fetchUsuarios = useCallback(async () => {
     if (!accessToken) {
@@ -63,7 +69,7 @@ export function useUsuarios(options: UseUsuariosOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, options, navigate]);
+  }, [accessToken, memoizedOptions, navigate]);
 
   useEffect(() => {
     fetchUsuarios();

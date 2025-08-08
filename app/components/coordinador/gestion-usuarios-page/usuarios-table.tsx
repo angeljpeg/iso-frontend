@@ -4,7 +4,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { type Usuario, RolUsuario } from "~/types/usuarios";
 import { Badge } from "~/components/ui/badge";
 
-// Definir las columnas para la tabla
 const columns: ColumnDef<Usuario>[] = [
   {
     accessorKey: "nombre",
@@ -55,10 +54,12 @@ const columns: ColumnDef<Usuario>[] = [
 ];
 
 export function UsuariosTable() {
-  const { usuarios, isLoading, error } = useUsuarios({
+  const options = {
     limit: 10,
     page: 1,
-  });
+  };
+
+  const { usuarios, isLoading, error } = useUsuarios(options);
 
   if (isLoading) {
     return (
