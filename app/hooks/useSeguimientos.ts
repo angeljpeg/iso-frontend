@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type {
   SeguimientoCurso,
   SeguimientosResponse,
   SeguimientosFiltros,
 } from "~/types/seguimientos";
 import { getAuthHeaders } from "../utils/auth";
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "~/services/api-config";
 
 export function useSeguimientos(filtros: SeguimientosFiltros = {}) {
   const [seguimientos, setSeguimientos] = useState<SeguimientoCurso[]>([]);
@@ -19,30 +18,14 @@ export function useSeguimientos(filtros: SeguimientosFiltros = {}) {
     totalPages: 0,
   });
 
-  const fetchSeguimientos = async (
-    currentFiltros: SeguimientosFiltros = {}
-  ) => {
+  const fetchSeguimientos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Construir query parameters
-      const params = new URLSearchParams();
-      if (currentFiltros.page)
-        params.append("page", currentFiltros.page.toString());
-      if (currentFiltros.limit)
-        params.append("limit", currentFiltros.limit.toString());
-      if (currentFiltros.profesorId)
-        params.append("profesorId", currentFiltros.profesorId);
-      if (currentFiltros.estado) params.append("estado", currentFiltros.estado);
-      if (currentFiltros.semana) params.append("semana", currentFiltros.semana);
-      if (currentFiltros.cuatrimestreId)
-        params.append("cuatrimestreId", currentFiltros.cuatrimestreId);
-
       const response = await fetch(
-        `${API_BASE_URL}/programacion-seguimiento-curso?${params.toString()}`,
+        `${API_BASE_URL}/programacion-seguimiento-curso`,
         {
-          method: "GET",
           headers: getAuthHeaders(),
         }
       );
@@ -68,15 +51,14 @@ export function useSeguimientos(filtros: SeguimientosFiltros = {}) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filtros]);
 
   useEffect(() => {
-    fetchSeguimientos(filtros);
-  }, []);
+    fetchSeguimientos();
+  }, [fetchSeguimientos]);
 
-  const refetch = (newFiltros?: SeguimientosFiltros) => {
-    const finalFiltros = { ...filtros, ...newFiltros };
-    fetchSeguimientos(finalFiltros);
+  const refetch = () => {
+    fetchSeguimientos();
   };
 
   return {

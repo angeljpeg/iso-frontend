@@ -36,7 +36,7 @@ export default function SeguimientoPage() {
   const cargasDelGrupo = cargasAcademicas.filter(
     (carga) => carga.grupo.id === grupoId
   );
-  const asignaturaId = cargasDelGrupo[0]?.asignatura.id;
+  const asignaturaId = cargasDelGrupo[0]?.asignatura;
   const { temas } = useTemas(asignaturaId || "");
 
   // Hook para el seguimiento
@@ -152,7 +152,7 @@ export default function SeguimientoPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Button
@@ -164,7 +164,7 @@ export default function SeguimientoPage() {
                 ← Volver
               </Button>
               <h1 className="text-xl font-semibold text-gray-900">
-                Seguimiento - {asignatura?.nombre} - {grupo?.nombreGenerado}
+                Seguimiento - {asignatura} - {grupo?.nombreGenerado}
               </h1>
             </div>
             <div className="flex items-center space-x-3">
@@ -182,21 +182,21 @@ export default function SeguimientoPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-blue-600 animate-spin"></div>
                 <p className="text-gray-600">Cargando seguimiento...</p>
               </div>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="p-4 bg-red-50 rounded-lg border border-red-200">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
-                    className="h-5 w-5 text-red-400"
+                    className="w-5 h-5 text-red-400"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -211,29 +211,29 @@ export default function SeguimientoPage() {
                   <h3 className="text-sm font-medium text-red-800">
                     Error al cargar el seguimiento
                   </h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                  <p className="mt-1 text-sm text-red-700">{error}</p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               {/* Información del seguimiento */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
                       📚 Asignatura
                     </h3>
-                    <p className="text-gray-700">{asignatura?.nombre}</p>
+                    <p className="text-gray-700">{asignatura}</p>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
                       🏷️ Grupo
                     </h3>
                     <p className="text-gray-700">{grupo?.nombreGenerado}</p>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
                       📅 Periodo
                     </h3>
                     <p className="text-gray-700">
@@ -244,12 +244,12 @@ export default function SeguimientoPage() {
               </div>
 
               {/* Tabla de seguimiento semanal */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-xl font-semibold text-gray-900">
                     Seguimiento Semanal
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="mt-1 text-sm text-gray-600">
                     Registra el avance de cada semana según el plan de estudios
                   </p>
                 </div>
@@ -258,22 +258,22 @@ export default function SeguimientoPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Semana
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Tema Esperado
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Avance Logrado
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Observaciones
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Estado
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           Acciones
                         </th>
                       </tr>
@@ -281,10 +281,10 @@ export default function SeguimientoPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {temas.map((tema) => {
                         const avance = seguimiento?.avancesSemanales.find(
-                          (a) => a.semana === tema.semanaRecomendada
+                          (a) => a.semana === tema.semanaProgramada
                         );
                         const nivelRetraso = calcularNivelRetraso(
-                          tema.semanaRecomendada,
+                          tema.semanaProgramada,
                           tema.nombre
                         );
                         const isEditable =
@@ -293,17 +293,17 @@ export default function SeguimientoPage() {
 
                         return (
                           <tr
-                            key={tema.id}
+                            key={tema.nombre}
                             className={
                               nivelRetraso === "retraso_critico"
                                 ? "bg-red-50"
                                 : ""
                             }
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              Semana {tema.semanaRecomendada}
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                              Semana {tema.semanaProgramada}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                               {tema.nombre}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -311,7 +311,7 @@ export default function SeguimientoPage() {
                                 value={avance?.avanceLogrado || ""}
                                 onChange={(e) =>
                                   handleAvanceChange(
-                                    tema.semanaRecomendada,
+                                    tema.semanaProgramada,
                                     "avanceLogrado",
                                     e.target.value
                                   )
@@ -330,7 +330,7 @@ export default function SeguimientoPage() {
                                 value={avance?.observaciones || ""}
                                 onChange={(e) =>
                                   handleAvanceChange(
-                                    tema.semanaRecomendada,
+                                    tema.semanaProgramada,
                                     "observaciones",
                                     e.target.value
                                   )
@@ -342,7 +342,7 @@ export default function SeguimientoPage() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <IndicadorRetraso nivel={nivelRetraso} />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                               {nivelRetraso === "retraso_critico" &&
                                 isEditable && (
                                   <Button
@@ -350,7 +350,7 @@ export default function SeguimientoPage() {
                                     size="sm"
                                     onClick={() =>
                                       handleJustificarRetraso(
-                                        tema.semanaRecomendada,
+                                        tema.semanaProgramada,
                                         tema.nombre
                                       )
                                     }
@@ -360,7 +360,7 @@ export default function SeguimientoPage() {
                                   </Button>
                                 )}
                               {avance?.justificacionRetraso && (
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="mt-1 text-xs text-gray-500">
                                   ✅ Justificado
                                 </div>
                               )}
@@ -377,7 +377,7 @@ export default function SeguimientoPage() {
               {seguimiento &&
                 (seguimiento.estado === "borrador" ||
                   seguimiento.estado === "rechazado") && (
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex justify-between items-center">
                       <div className="flex space-x-3">
                         <Button
@@ -402,8 +402,8 @@ export default function SeguimientoPage() {
 
               {/* Comentarios del revisor */}
               {seguimiento?.comentariosRevisor && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="mb-2 text-sm font-medium text-blue-800">
                     💬 Comentarios del Revisor
                   </h3>
                   <p className="text-sm text-blue-700">

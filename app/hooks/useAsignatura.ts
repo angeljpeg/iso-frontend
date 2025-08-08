@@ -23,7 +23,7 @@ export function useAsignatura(asignaturaId: string) {
         
         // Buscar la carga académica que corresponde a esta asignatura
         const cargaRelacionada = cargasAcademicas.find(
-          (carga) => carga.asignatura.id === asignaturaId
+          (carga) => carga.asignatura === asignaturaId
         );
         
         setCargaAcademica(cargaRelacionada || null);
