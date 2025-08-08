@@ -30,6 +30,20 @@ const columns: ColumnDef<Usuario>[] = [
     },
   },
   {
+    accessorKey: "apellido",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Apellido
+          <ArrowUpDown className="ml-2 w-4 h-4" />
+        </Button>
+      );
+    },
+  },
+  {
     accessorKey: "email",
     header: ({ column }) => {
       return (
@@ -161,7 +175,7 @@ export function UsuariosTable() {
         currentFilters={{
           search: options.search || "",
           rol: options.rol,
-          estado: options.estado,
+          activo: options.activo,
         }}
       />
 
