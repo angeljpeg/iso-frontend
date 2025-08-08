@@ -96,6 +96,16 @@ export function UsuariosFilters({
             <Search className="mr-2 w-4 h-4" />
             Buscar
           </Button>
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="px-4"
+            >
+              <X className="mr-2 w-4 h-4" />
+              Limpiar
+            </Button>
+          )}
         </div>
 
         {/* Filtros */}
@@ -116,16 +126,6 @@ export function UsuariosFilters({
               placeholder="Filtrar por estado"
             />
           </div>
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              onClick={handleClearFilters}
-              className="px-4"
-            >
-              <X className="mr-2 w-4 h-4" />
-              Limpiar
-            </Button>
-          )}
         </div>
       </div>
     </div>

@@ -131,9 +131,13 @@ export function UsuariosTable() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Usuarios</h1>
-      </div>
+      <header className="flex justify-between items-center">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Usuarios</h1>
+        </div>
+
+        <Button>Crear Usuario</Button>
+      </header>
 
       <UsuariosFilters
         onSearch={handleSearch}
