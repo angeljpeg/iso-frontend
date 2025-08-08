@@ -9,4 +9,6 @@ export interface CreateUsuarioRequest {
   password: string;
 }
 
+export interface UpdateUsuarioRequest extends Partial<CreateUsuarioRequest> {}
+
 export interface CreateUsuarioResponse extends Usuario {}
