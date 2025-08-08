@@ -1,4 +1,17 @@
-import { Card } from "./ui/Card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "./ui/Card";
+import { Badge } from "./ui/badge";
+import {
+  BookOpenIcon,
+  CalendarIcon,
+  HashIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import type { Tema } from "../types/carga-academica";
 
 interface TemaCardProps {
@@ -10,56 +23,53 @@ export function TemaCard({ tema, onClick }: TemaCardProps) {
   const handleClick = () => {
     onClick(tema);
   };
+
   return (
     <Card
-      className="h-full group hover:border-[#3e9530]/50 relative overflow-hidden"
-      variant="elevated"
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      className="h-full cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group border-border/50 hover:border-green-500/50"
     >
-      {/* Efecto de gradiente sutil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-green-50/30 opacity-0 group-hover:opacity-100 transition-smooth" />
-
-      <div className="space-y-4 relative z-10">
-        {/* Nombre del tema */}
-        <div className="flex items-start justify-between">
-          <h3 className="text-heading-md font-semibold text-gray-900 group-hover:text-[#3e9530] transition-smooth">
-            📖 {tema.nombre}
-          </h3>
-          <div className="w-3 h-3 bg-[#3e9530] rounded-full opacity-0 group-hover:opacity-100 transition-smooth" />
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
+          <CardTitle className="flex gap-2 items-center text-lg font-semibold transition-colors duration-200 text-foreground group-hover:text-foreground">
+            <BookOpenIcon className="w-5 h-5 text-muted-foreground" />
+            {tema.nombre}
+          </CardTitle>
+          <ChevronRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-200" />
         </div>
+      </CardHeader>
 
+      <CardContent className="space-y-4">
         {/* Unidad */}
-        <div className="bg-gray-50 rounded-lg p-3 group-hover:bg-green-50/50 transition-smooth">
-          <p className="text-body-lg text-gray-700 font-medium">
-            📚 Unidad {tema.unidad}
-          </p>
-        </div>
-
-        {/* Semana recomendada */}
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-[#3b82f6] rounded-full" />
-          <p className="text-body-sm text-[#6b7280] font-medium">
-            📅 Semana {tema.semanaRecomendada}
-          </p>
-        </div>
-
-        {/* Descripción si existe */}
-        {tema.descripcion && (
-          <div className="pt-3 border-t border-gray-100 group-hover:border-green-200 transition-smooth">
-            <p className="text-body-sm text-[#6b7280] line-clamp-3">
-              {tema.descripcion}
-            </p>
-          </div>
-        )}
-
-        {/* Estado */}
-        <div className="pt-3 border-t border-gray-100 group-hover:border-green-200 transition-smooth">
-          <div className="flex items-center justify-between">
-            <p className="text-body-sm text-[#6b7280]">
-              Estado: {tema.activo ? "Activo" : "Inactivo"}
-            </p>
+        <div className="flex gap-3 items-center p-3 rounded-lg border border-border bg-muted/30 group-hover:bg-muted/50 transition-colors duration-200">
+          <HashIcon className="flex-shrink-0 w-5 h-5 text-muted-foreground" />
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground">Unidad {tema.unidad}</p>
           </div>
         </div>
-      </div>
+
+        {/* Semana programada */}
+        <div className="flex gap-3 items-center">
+          <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+          <Badge variant="secondary" className="text-xs font-medium">
+            Semana {tema.semanaProgramada}
+          </Badge>
+        </div>
+      </CardContent>
+
+      <CardFooter className="pt-3 border-t border-border/50">
+        <div className="flex justify-between items-center w-full">
+          <Badge variant="outline" className="text-xs">
+            Tema
+          </Badge>
+          <div className="flex gap-1 items-center text-xs text-muted-foreground group-hover:text-green-600 transition-colors duration-200">
+            <span>Ver detalles</span>
+            <ChevronRightIcon className="w-3 h-3" />
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

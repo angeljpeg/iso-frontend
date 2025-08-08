@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAsignatura } from "../hooks/useAsignatura";
 import { TemaCard } from "../components/TemaCard";
-import { ModalCrearSeguimiento } from "../components/ui/ModalCrearSeguimiento";
 import { Button } from "../components/ui/Button";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
@@ -15,26 +14,8 @@ export default function AsignaturaPage() {
     asignaturaId!
   );
 
-  const [modalSeguimiento, setModalSeguimiento] = useState<{
-    isOpen: boolean;
-    tema: Tema | null;
-  }>({ isOpen: false, tema: null });
-
   const handleTemaClick = (tema: Tema) => {
     console.log("Tema clicked:", tema.nombre);
-  };
-
-  const handleCrearSeguimiento = (tema: Tema) => {
-    console.log("🔍 Debug - Creando seguimiento:");
-    console.log("- Tema:", tema);
-    console.log("- CargaAcademica:", cargaAcademica);
-    console.log("- AsignaturaId:", asignaturaId);
-    
-    setModalSeguimiento({ isOpen: true, tema });
-  };
-
-  const handleCloseModal = () => {
-    setModalSeguimiento({ isOpen: false, tema: null });
   };
 
   if (isLoading) {
@@ -43,8 +24,8 @@ export default function AsignaturaPage() {
         <DashboardLayout title={`Asignatura ${asignatura?.nombre || ""}`}>
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-utn-primary mx-auto mb-4"></div>
-              <p className="text-utn-secondary text-base">
+              <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 animate-spin border-utn-primary"></div>
+              <p className="text-base text-utn-secondary">
                 Cargando asignatura...
               </p>
             </div>
@@ -58,10 +39,10 @@ export default function AsignaturaPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout title="Error">
-          <div className="bg-red-50 border border-utn-error/30 rounded-lg p-6">
+          <div className="p-6 bg-red-50 rounded-lg border border-utn-error/30">
             <div className="flex items-start">
               <svg
-                className="w-6 h-6 text-utn-error mr-3"
+                className="mr-3 w-6 h-6 text-utn-error"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -77,7 +58,7 @@ export default function AsignaturaPage() {
                 <h3 className="text-lg font-semibold text-utn-error">
                   Error al cargar la asignatura
                 </h3>
-                <p className="text-utn-error/80 text-sm">{error}</p>
+                <p className="text-sm text-utn-error/80">{error}</p>
               </div>
             </div>
           </div>
@@ -90,17 +71,17 @@ export default function AsignaturaPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout title="Asignatura no encontrada">
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <h2 className="text-2xl font-bold text-gray-900">
               Asignatura no encontrada
             </h2>
-            <p className="text-utn-secondary mt-2">
+            <p className="mt-2 text-utn-secondary">
               La asignatura solicitada no existe o no tienes permisos para
               verla.
             </p>
             <Button
               onClick={() => navigate("/dashboard")}
-              className="mt-4 bg-utn-primary hover:bg-utn-primary-dark text-white"
+              className="mt-4 text-white bg-utn-primary hover:bg-utn-primary-dark"
             >
               Volver al Dashboard
             </Button>
@@ -112,20 +93,24 @@ export default function AsignaturaPage() {
 
   return (
     <ProtectedRoute>
-      <DashboardLayout title={`${asignatura.nombre} - ${asignatura.carrera}`}>
+      <DashboardLayout
+        title={`${asignatura?.nombre || "Asignatura"} - ${
+          cargaAcademica?.carrera || ""
+        }`}
+      >
         <div className="space-y-6">
           {/* Header con navegación */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  📚 {asignatura.nombre}
+                  📚 {asignatura?.nombre}
                 </h1>
-                <p className="text-utn-secondary mt-2">
-                  🎓 {asignatura.carrera}
+                <p className="mt-2 text-utn-secondary">
+                  🎓 {cargaAcademica?.carrera}
                 </p>
                 {cargaAcademica && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="mt-1 text-sm text-gray-500">
                     Grupo: {cargaAcademica.grupo.nombreGenerado} | Cuatrimestre:{" "}
                     {cargaAcademica.grupo.cuatrimestreRelacion.nombreGenerado}
                   </p>
@@ -156,8 +141,8 @@ export default function AsignaturaPage() {
 
           {/* Temas */}
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <h2 className="mb-2 text-xl font-bold text-gray-900">
                 📋 Temas de la Asignatura
               </h2>
               <p className="text-utn-secondary">
@@ -165,40 +150,27 @@ export default function AsignaturaPage() {
               </p>
             </div>
 
-            {asignatura.temas && asignatura.temas.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {asignatura.temas.map((tema) => (
+            {asignatura?.temas && asignatura.temas.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {asignatura.temas.map((tema, index) => (
                   <div
-                    key={tema.id}
-                    className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex flex-col justify-between h-full"
+                    key={`${tema.nombre}-${tema.unidad}-${index}`}
+                    className="flex flex-col justify-between p-4 h-full bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow duration-200 hover:shadow-md"
                   >
                     {/* Tarjeta del tema */}
-                    <div className="cursor-pointer flex-1">
+                    <div className="flex-1">
                       <TemaCard
                         tema={tema}
                         onClick={() => handleTemaClick(tema)}
                       />
                     </div>
-
-                    {/* Botón */}
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCrearSeguimiento(tema);
-                        }}
-                        className="bg-utn-success hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-utn-success"
-                      >
-                        📝 Crear seguimiento
-                      </Button>
-                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <div className="text-gray-400 text-6xl mb-4">📋</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <div className="p-8 text-center bg-gray-50 rounded-lg">
+                <div className="mb-4 text-6xl text-gray-400">📋</div>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
                   No hay temas disponibles
                 </h3>
                 <p className="text-utn-secondary">
@@ -207,19 +179,6 @@ export default function AsignaturaPage() {
               </div>
             )}
           </div>
-
-          {/* Modal */}
-          {modalSeguimiento.isOpen &&
-            modalSeguimiento.tema &&
-            cargaAcademica && (
-              <ModalCrearSeguimiento
-                isOpen={modalSeguimiento.isOpen}
-                onClose={handleCloseModal}
-                tema={modalSeguimiento.tema}
-                cargaAcademicaId={cargaAcademica?.id || asignaturaId!}
-                cuatrimestreId={cargaAcademica?.cuatrimestreId || "1"}
-              />
-            )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>
