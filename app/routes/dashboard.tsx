@@ -6,6 +6,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 // Importar componentes específicos por rol
 import { ProfesorDashboardContent } from "~/components/dashboard/profesor-dashboard-content";
 import { DirectorDashboardContent } from "~/components/dashboard/DirectorDashboardContent";
+import { CoordinadorDashboardContent } from "~/components/dashboard/CoordinadorDashboardContent";
 import { AdminDashboardContent } from "~/components/dashboard/AdminDashboardContent";
 
 export default function DashboardPage() {
@@ -48,9 +49,9 @@ export default function DashboardPage() {
   const renderDashboardContent = () => {
     if (isLoading) {
       return (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <div className="animate-pulse">
-            <div className="w-16 h-16 bg-utn-primary rounded-full mx-auto mb-4 flex items-center justify-center">
+            <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 rounded-full bg-utn-primary">
               <svg
                 className="w-8 h-8 text-white animate-spin"
                 fill="none"
@@ -71,7 +72,7 @@ export default function DashboardPage() {
                 ></path>
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900">
               Cargando tu dashboard...
             </h3>
             <p className="text-gray-600">
@@ -88,17 +89,19 @@ export default function DashboardPage() {
         return <ProfesorDashboardContent />;
 
       case "director":
-      case "coordinador":
         return <DirectorDashboardContent />;
+
+      case "coordinador":
+        return <CoordinadorDashboardContent />;
 
       case "admin":
         return <AdminDashboardContent />;
 
       default:
         return (
-          <div className="text-center py-12">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+          <div className="py-12 text-center">
+            <div className="p-6 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h3 className="mb-2 text-lg font-semibold text-yellow-800">
                 Rol no reconocido
               </h3>
               <p className="text-yellow-700">

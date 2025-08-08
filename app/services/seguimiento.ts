@@ -10,6 +10,7 @@ import {
   handleAuthError,
   handleAuthErrorWithStatus,
 } from "../utils/auth";
+import { EstadoSeguimiento } from "~/types/enums";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -42,23 +43,26 @@ class SeguimientoService {
 
   // Obtener seguimientos del profesor actual
   async getMisSeguimientos(): Promise<Seguimiento[]> {
-    return this.makeRequest<Seguimiento[]>("/seguimiento/mis-seguimientos", {
+    return this.makeRequest<Seguimiento[]>("/programacion-seguimiento-curso", {
       method: "GET",
     });
   }
 
   // Obtener seguimiento específico
   async getSeguimiento(id: string): Promise<Seguimiento> {
-    return this.makeRequest<Seguimiento>(`/seguimiento/${id}`, {
-      method: "GET",
-    });
+    return this.makeRequest<Seguimiento>(
+      `/programacion-seguimiento-curso/${id}`,
+      {
+        method: "GET",
+      }
+    );
   }
 
   // Crear nuevo seguimiento
   async crearSeguimiento(
     seguimiento: Omit<Seguimiento, "id">
   ): Promise<Seguimiento> {
-    return this.makeRequest<Seguimiento>("/seguimiento", {
+    return this.makeRequest<Seguimiento>("/programacion-seguimiento-curso", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,20 +76,31 @@ class SeguimientoService {
     id: string,
     seguimiento: Partial<Seguimiento>
   ): Promise<Seguimiento> {
-    return this.makeRequest<Seguimiento>(`/seguimiento/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(seguimiento),
-    });
+    return this.makeRequest<Seguimiento>(
+      `/programacion-seguimiento-curso/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(seguimiento),
+      }
+    );
   }
 
-  // Enviar seguimiento para revisión
+  // Enviar seguimiento para revisión - Esta funcionalidad no existe en el backend
+  // Se puede implementar como una actualización de estado
   async enviarSeguimiento(id: string): Promise<Seguimiento> {
-    return this.makeRequest<Seguimiento>(`/seguimiento/${id}/enviar`, {
-      method: "POST",
-    });
+    return this.makeRequest<Seguimiento>(
+      `/programacion-seguimiento-curso/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado: "enviado" }),
+      }
+    );
   }
 
   // Obtener todos los seguimientos (para directores/coordinadores)
@@ -107,71 +122,139 @@ class SeguimientoService {
 
     const queryString = params.toString();
     const endpoint = queryString
-      ? `/seguimiento?${queryString}`
-      : "/seguimiento";
+      ? `/programacion-seguimiento-curso?${queryString}`
+      : "/programacion-seguimiento-curso";
 
     return this.makeRequest<Seguimiento[]>(endpoint, {
       method: "GET",
     });
   }
 
-  // Revisar seguimiento (aprobar/rechazar)
+  // Revisar seguimiento - Implementar como actualización de estado
   async revisarSeguimiento(
     id: string,
     estado: "aprobado" | "rechazado",
     comentarios?: string
   ): Promise<Seguimiento> {
-    return this.makeRequest<Seguimiento>(`/seguimiento/${id}/revisar`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ estado, comentarios }),
-    });
-  }
-
-  // Obtener estadísticas
-  async getEstadisticas(
-    filtros?: FiltroSeguimiento
-  ): Promise<EstadisticasSeguimiento> {
-    const params = new URLSearchParams();
-    if (filtros) {
-      Object.entries(filtros).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (value instanceof Date) {
-            params.append(key, value.toISOString());
-          } else {
-            params.append(key, String(value));
-          }
-        }
-      });
-    }
-
-    const queryString = params.toString();
-    const endpoint = queryString
-      ? `/seguimiento/estadisticas?${queryString}`
-      : "/seguimiento/estadisticas";
-
-    return this.makeRequest<EstadisticasSeguimiento>(endpoint, {
-      method: "GET",
-    });
-  }
-
-  // Obtener notificaciones
-  async getNotificaciones(): Promise<NotificacionSeguimiento[]> {
-    return this.makeRequest<NotificacionSeguimiento[]>(
-      "/seguimiento/notificaciones",
+    return this.makeRequest<Seguimiento>(
+      `/programacion-seguimiento-curso/${id}`,
       {
-        method: "GET",
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado, comentarios }),
       }
     );
   }
 
-  // Marcar notificación como leída
-  async marcarNotificacionLeida(id: string): Promise<void> {
-    return this.makeRequest<void>(`/seguimiento/notificaciones/${id}/leer`, {
-      method: "POST",
+  async getEstadisticas(
+    filtros?: FiltroSeguimiento
+  ): Promise<EstadisticasSeguimiento> {
+    const seguimientos = await this.getAllSeguimientos(filtros);
+
+    const totalSeguimientos = seguimientos.length;
+    const seguimientosAprobados = seguimientos.filter(
+      (s) => s.estado === "aprobado"
+    ).length;
+    const seguimientosPendientes = seguimientos.filter(
+      (s) => s.estado === "borrador" || s.estado === "enviado"
+    ).length;
+    const seguimientosRechazados = seguimientos.filter(
+      (s) => s.estado === "rechazado"
+    ).length;
+
+    // Calcular retrasos basándose en avancesSemanales
+    let retrasosCriticos = 0;
+    let retrasosLeves = 0;
+    let sinRetrasos = 0;
+
+    seguimientos.forEach(seguimiento => {
+      if (seguimiento.avancesSemanales && seguimiento.avancesSemanales.length > 0) {
+        const tieneRetrasosCriticos = seguimiento.avancesSemanales.some(
+          avance => avance.nivelRetraso === "retraso_critico"
+        );
+        const tieneRetrasosLeves = seguimiento.avancesSemanales.some(
+          avance => avance.nivelRetraso === "retraso_leve"
+        );
+        
+        if (tieneRetrasosCriticos) {
+          retrasosCriticos++;
+        } else if (tieneRetrasosLeves) {
+          retrasosLeves++;
+        } else {
+          sinRetrasos++;
+        }
+      } else {
+        sinRetrasos++;
+      }
     });
+
+    return {
+      totalSeguimientos,
+      seguimientosPendientes,
+      seguimientosAprobados,
+      seguimientosRechazados,
+      retrasosCriticos,
+      retrasosLeves,
+      sinRetrasos,
+    };
+  }
+
+  async getNotificaciones(): Promise<NotificacionSeguimiento[]> {
+    const seguimientos = await this.getAllSeguimientos();
+    const notificaciones: NotificacionSeguimiento[] = [];
+
+    seguimientos.forEach(seguimiento => {
+      // Notificaciones por estado
+      if (seguimiento.estado === "rechazado") {
+        notificaciones.push({
+          id: `${seguimiento.id}-rechazado`,
+          tipo: "seguimiento_rechazado",
+          mensaje: `Seguimiento rechazado: ${seguimiento.asignatura?.nombre || 'Asignatura'}`,
+          fechaCreacion: new Date(),
+          leida: false,
+          seguimientoId: seguimiento.id,
+        });
+      }
+
+      if (seguimiento.estado === "borrador") {
+        notificaciones.push({
+          id: `${seguimiento.id}-pendiente`,
+          tipo: "seguimiento_pendiente",
+          mensaje: `Seguimiento pendiente: ${seguimiento.asignatura?.nombre || 'Asignatura'}`,
+          fechaCreacion: new Date(),
+          leida: false,
+          seguimientoId: seguimiento.id,
+        });
+      }
+
+      // Notificaciones por retrasos críticos
+      if (seguimiento.avancesSemanales) {
+        const tieneRetrasosCriticos = seguimiento.avancesSemanales.some(
+          avance => avance.nivelRetraso === "retraso_critico"
+        );
+        
+        if (tieneRetrasosCriticos) {
+          notificaciones.push({
+            id: `${seguimiento.id}-retraso`,
+            tipo: "retraso_critico",
+            mensaje: `Retraso crítico detectado: ${seguimiento.asignatura?.nombre || 'Asignatura'}`,
+            fechaCreacion: new Date(),
+            leida: false,
+            seguimientoId: seguimiento.id,
+          });
+        }
+      }
+    });
+
+    return notificaciones;
+  }
+
+  async marcarNotificacionLeida(id: string): Promise<void> {
+    // Esta funcionalidad necesitaría ser implementada en el backend
+    // Por ahora, solo simular la operación
+    return Promise.resolve();
   }
 
   // Exportar reporte
