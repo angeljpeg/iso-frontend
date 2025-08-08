@@ -1,11 +1,11 @@
-import type { RolUsuario, Usuario } from "..";
+import type { RolUsuarioType, Usuario } from "..";
 
 export interface CreateUsuarioRequest {
   token: string;
   email: string;
   nombre: string;
   apellido: string;
-  rol: RolUsuario;
+  rol: RolUsuarioType;
   password: string;
 }
 

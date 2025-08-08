@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AuthState, Usuario, LoginResponse } from "../types/auth";
+import type { AuthState, LoginResponse } from "../types/auth";
 
 interface AuthStore extends AuthState {
   login: (data: LoginResponse) => void;
