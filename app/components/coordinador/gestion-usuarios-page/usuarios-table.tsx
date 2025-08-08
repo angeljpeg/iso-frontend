@@ -105,32 +105,30 @@ const columns: ColumnDef<Usuario>[] = [
       const { accessToken } = useAuthStore();
       const [isLoading, setIsLoading] = useState(false);
 
-      const handleDeactivate = async () => {
+      const handleDeactivate = async (refetchFn: () => void) => {
         if (!accessToken) return;
 
         try {
           setIsLoading(true);
           await deactivateUsuario({ token: accessToken, id: usuario.id });
           toast.success("Usuario desactivado exitosamente");
-          // Refetch usuarios
-          window.location.reload(); // Temporal, mejor usar refetch del hook
+          refetchFn(); // Usar refetch en lugar de reload
         } catch (error) {
-          console.error("Error reactivando usuario:", error);
+          console.error("Error desactivando usuario:", error);
           toast.error("Error al desactivar usuario");
         } finally {
           setIsLoading(false);
         }
       };
 
-      const handleReactivate = async () => {
+      const handleReactivate = async (refetchFn: () => void) => {
         if (!accessToken) return;
 
         try {
           setIsLoading(true);
           await reactivateUsuario({ token: accessToken, id: usuario.id });
           toast.success("Usuario reactivado exitosamente");
-          // Refetch usuarios
-          window.location.reload(); // Temporal, mejor usar refetch del hook
+          refetchFn(); // Usar refetch en lugar de reload
         } catch (error) {
           console.error("Error reactivando usuario:", error);
           toast.error("Error al reactivar usuario");
@@ -140,48 +138,75 @@ const columns: ColumnDef<Usuario>[] = [
       };
 
       const handleEdit = () => {
-        // Implementar modal de edición
         toast.info("Función de edición en desarrollo");
       };
 
       return (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleEdit}
-            disabled={!usuario.activo || isLoading}
-            className="p-0 w-8 h-8"
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-
-          {usuario.activo ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDeactivate}
-              disabled={isLoading}
-              className="p-0 w-8 h-8"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={handleReactivate}
-              disabled={isLoading}
-              className="p-0 w-8 h-8"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+        <ActionsCell
+          usuario={usuario}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+          onDeactivate={handleDeactivate}
+          onReactivate={handleReactivate}
+        />
       );
     },
   },
 ];
+
+// Componente separado para las acciones que recibe refetch como prop
+function ActionsCell({
+  usuario,
+  isLoading,
+  onEdit,
+  onDeactivate,
+  onReactivate,
+}: {
+  usuario: Usuario;
+  isLoading: boolean;
+  onEdit: () => void;
+  onDeactivate: (refetch: () => void) => void;
+  onReactivate: (refetch: () => void) => void;
+}) {
+  // Necesitamos acceso al refetch desde el componente padre
+  const { refetch } = useUsuarios();
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEdit}
+        disabled={!usuario.activo || isLoading}
+        className="p-0 w-8 h-8"
+      >
+        <Edit className="w-4 h-4" />
+      </Button>
+
+      {usuario.activo ? (
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onDeactivate(refetch)}
+          disabled={isLoading}
+          className="p-0 w-8 h-8"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      ) : (
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => onReactivate(refetch)}
+          disabled={isLoading}
+          className="p-0 w-8 h-8"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function UsuariosTable() {
   const {
@@ -193,13 +218,174 @@ export function UsuariosTable() {
     updateFilters,
     updatePage,
     clearFilters,
+    refetch,
   } = useUsuarios({
     limit: 2,
     page: 1,
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { refetch } = useUsuarios();
+
+  // Crear las columnas dentro del componente para tener acceso a refetch
+  const columns: ColumnDef<Usuario>[] = [
+    {
+      accessorKey: "nombre",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Nombre
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "apellido",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Apellido
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Email
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "rol",
+      header: "Rol",
+      cell: ({ row }) => {
+        const rol = row.getValue("rol") as RolUsuarioType;
+        const rolLabels = {
+          [RolUsuarioEnum.COORDINADOR]: "Coordinador",
+          [RolUsuarioEnum.MODERADOR]: "Moderador",
+          [RolUsuarioEnum.PROFESOR_TIEMPO_COMPLETO]: "Profesor Tiempo Completo",
+          [RolUsuarioEnum.PROFESOR_ASIGNATURA]: "Profesor Asignatura",
+        };
+        return <Badge variant="outline">{rolLabels[rol] || rol}</Badge>;
+      },
+    },
+    {
+      accessorKey: "activo",
+      header: "Estado",
+      cell: ({ row }) => {
+        const activo = row.getValue("activo") as boolean;
+        return (
+          <Badge variant={activo ? "default" : "destructive"}>
+            {activo ? "Activo" : "Inactivo"}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Fecha de Creación",
+      cell: ({ row }) => {
+        const fecha = new Date(row.getValue("createdAt") as Date);
+        return fecha.toLocaleDateString("es-ES");
+      },
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      cell: ({ row }) => {
+        const usuario = row.original;
+        const { accessToken } = useAuthStore();
+        const [isLoading, setIsLoading] = useState(false);
+
+        const handleDeactivate = async () => {
+          if (!accessToken) return;
+
+          try {
+            setIsLoading(true);
+            await deactivateUsuario({ token: accessToken, id: usuario.id });
+            toast.success("Usuario desactivado exitosamente");
+            refetch(); // Ahora tenemos acceso a refetch
+          } catch (error) {
+            console.error("Error desactivando usuario:", error);
+            toast.error("Error al desactivar usuario");
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const handleReactivate = async () => {
+          if (!accessToken) return;
+
+          try {
+            setIsLoading(true);
+            await reactivateUsuario({ token: accessToken, id: usuario.id });
+            toast.success("Usuario reactivado exitosamente");
+            refetch(); // Ahora tenemos acceso a refetch
+          } catch (error) {
+            console.error("Error reactivando usuario:", error);
+            toast.error("Error al reactivar usuario");
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const handleEdit = () => {
+          toast.info("Función de edición en desarrollo");
+        };
+
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              disabled={!usuario.activo || isLoading}
+              className="p-0 w-8 h-8"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+
+            {usuario.activo ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeactivate}
+                disabled={isLoading}
+                className="p-0 w-8 h-8"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleReactivate}
+                disabled={isLoading}
+                className="p-0 w-8 h-8"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
 
   const handleSearch = (search: string) => {
     updateFilters({ search: search || undefined });

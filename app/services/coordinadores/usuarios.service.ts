@@ -141,9 +141,8 @@ export const deactivateUsuario = async (
       );
     }
 
-    if (!response.headers.get("content-type")?.includes("application/json")) {
-      throw new Error("Respuesta no es JSON válida");
-    }
+    // No verificar content-type ya que el backend puede no enviar JSON
+    // Solo verificar que la respuesta sea exitosa (200-299)
   } catch (error) {
     console.error("Error deactivating usuario:", error);
     throw error instanceof Error ? error : new Error(String(error));
@@ -170,9 +169,8 @@ export const reactivateUsuario = async (
       );
     }
 
-    if (!response.headers.get("content-type")?.includes("application/json")) {
-      throw new Error("Respuesta no es JSON válida");
-    }
+    // No verificar content-type ya que el backend puede no enviar JSON
+    // Solo verificar que la respuesta sea exitosa (200-299)
   } catch (error) {
     console.error("Error reactivating usuario:", error);
     throw error instanceof Error ? error : new Error(String(error));
