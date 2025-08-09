@@ -3,15 +3,11 @@ import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 import { FormSelect } from "~/components/ui/forms/FormSelect";
 import { useUsuarios } from "~/hooks/useUsuarios";
-/* import { useGrupos } from "~/hooks/useGrupos";
-import { useCuatrimestres } from "~/hooks/useCuatrimestres"; */
+import { useGrupos } from "~/hooks/useGrupos";
+import { useCarreras } from "~/hooks/useCarreras";
 import { Search, X, User, Calendar, Users } from "lucide-react";
 import type { Usuario } from "~/types/usuarios";
 import type { Grupo } from "~/types/grupos";
-import type {
-  Cuatrimestre,
-  CuatrimestreEstadoType,
-} from "~/types/cuatrimestres";
 
 interface CargasAcademicasFiltersProps {
   onFilterChange: (filters: {
@@ -62,7 +58,7 @@ export function CargasAcademicasFilters({
   // Hooks para obtener datos
   const {
     usuarios: profesores,
-    isLoading: isLoadingProfesores,
+    isLoading: _isLoadingProfesores,
     updateFilters: updateProfesoresFilters,
   } = useUsuarios({
     search: profesorSearch,
@@ -70,9 +66,9 @@ export function CargasAcademicasFilters({
     limit: 50,
   });
 
-  /*   const {
+  const {
     grupos,
-    isLoading: isLoadingGrupos,
+    isLoading: _isLoadingGrupos,
     updateFilters: updateGruposFilters,
   } = useGrupos({
     search: grupoSearch,
@@ -80,14 +76,12 @@ export function CargasAcademicasFilters({
     limit: 50,
   });
 
+  // Nuevo hook para carreras
   const {
-    cuatrimestres,
-    isLoading: isLoadingCuatrimestres,
-    updateFilters: updateCuatrimestresFilters,
-  } = useCuatrimestres({
-    año: añoFilter ? parseInt(añoFilter) : undefined,
-    limit: 50,
-  }); */
+    carreras,
+    isLoading: _isLoadingCarreras,
+    error: _carrerasError,
+  } = useCarreras();
 
   // Filtrar solo profesores
   const profesoresFiltrados = profesores.filter(
@@ -96,41 +90,13 @@ export function CargasAcademicasFilters({
       usuario.rol === "profesor_asignatura"
   );
 
-  // Opciones para selects
+  // Opciones para selects - ahora dinámicas
   const carreraOptions = [
     { value: "", label: "Todas las carreras" },
-    {
-      value: "Tecnologías de la Información",
-      label: "Tecnologías de la Información",
-    },
-    {
-      value: "Desarrollo de Software Multiplataforma",
-      label: "Desarrollo de Software Multiplataforma",
-    },
-    {
-      value: "Infraestructura de Redes Digitales",
-      label: "Infraestructura de Redes Digitales",
-    },
-    {
-      value: "Entornos Virtuales y Negocios Digitales",
-      label: "Entornos Virtuales y Negocios Digitales",
-    },
-    {
-      value: "Gestión del Capital Humano",
-      label: "Gestión del Capital Humano",
-    },
-    { value: "Contaduría Pública", label: "Contaduría Pública" },
-    { value: "Administración", label: "Administración" },
-    { value: "Gastronomía", label: "Gastronomía" },
-    { value: "Turismo", label: "Turismo" },
-    { value: "Mecatrónica", label: "Mecatrónica" },
-    { value: "Mantenimiento Industrial", label: "Mantenimiento Industrial" },
-    { value: "Energías Renovables", label: "Energías Renovables" },
-    {
-      value: "Agricultura Sustentable y Protegida",
-      label: "Agricultura Sustentable y Protegida",
-    },
-    { value: "Acuicultura", label: "Acuicultura" },
+    ...carreras.map((carrera) => ({
+      value: carrera.nombre,
+      label: carrera.nombre,
+    })),
   ];
 
   const estadoOptions = [
@@ -162,7 +128,7 @@ export function CargasAcademicasFilters({
     return () => clearTimeout(timeoutId);
   }, [profesorSearch, updateProfesoresFilters]);
 
-  /*   useEffect(() => {
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
       updateGruposFilters({
         search: grupoSearch,
@@ -172,7 +138,7 @@ export function CargasAcademicasFilters({
     return () => clearTimeout(timeoutId);
   }, [grupoSearch, selectedCarrera, updateGruposFilters]);
 
-  useEffect(() => {
+  /*   useEffect(() => {
     updateCuatrimestresFilters({
       año: añoFilter ? parseInt(añoFilter) : undefined,
     });
@@ -204,14 +170,6 @@ export function CargasAcademicasFilters({
     onFilterChange({
       ...currentFilters,
       carrera: value || undefined,
-    });
-  };
-
-  const handleCuatrimestreChange = (value: string) => {
-    setSelectedCuatrimestre(value);
-    onFilterChange({
-      ...currentFilters,
-      cuatrimestreId: value || undefined,
     });
   };
 
@@ -342,7 +300,7 @@ export function CargasAcademicasFilters({
         </div>
 
         {/* Búsqueda de Grupo */}
-        {/*  <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-700">
             <Users className="inline mr-1 w-4 h-4" />
             Buscar Grupo
@@ -376,7 +334,7 @@ export function CargasAcademicasFilters({
               ))}
             </div>
           )}
-        </div> */}
+        </div>
 
         {/* Filtros de Cuatrimestre */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -395,7 +353,25 @@ export function CargasAcademicasFilters({
           </div>
 
           {/* Cuatrimestre específico */}
-          {/*  <div>
+          {/* Descomentar y actualizar el hook de cuatrimestres
+          const {
+            cuatrimestres,
+            isLoading: isLoadingCuatrimestres,
+            updateFilters: updateCuatrimestresFilters,
+          } = useCuatrimestres({
+            año: añoFilter ? parseInt(añoFilter) : undefined,
+            limit: 50,
+          });
+
+          // Descomentar el useEffect para cuatrimestres
+          useEffect(() => {
+            updateCuatrimestresFilters({
+              año: añoFilter ? parseInt(añoFilter) : undefined,
+            });
+          }, [añoFilter, updateCuatrimestresFilters]);
+
+          // Descomentar el select de cuatrimestre específico
+          <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">
               Cuatrimestre Específico
             </label>

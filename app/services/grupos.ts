@@ -328,13 +328,13 @@ export const getCargaAcademicaByGrupo = async (
 
 // Clase de servicio legacy (mantener para compatibilidad)
 class GruposService {
-  async getGrupoById(grupoId: string): Promise<Grupo> {
+  async getGrupoById(_grupoId: string): Promise<Grupo> {
     // Esta función necesitará el token, pero para mantener compatibilidad
     // se puede obtener del store de auth
     throw new Error("Use getOneGrupo function instead");
   }
 
-  async getCargaAcademicaByGrupo(grupoId: string): Promise<CargaAcademica[]> {
+  async getCargaAcademicaByGrupo(_grupoId: string): Promise<CargaAcademica[]> {
     // Esta función necesitará el token, pero para mantener compatibilidad
     // se puede obtener del store de auth
     throw new Error("Use getCargaAcademicaByGrupo function instead");

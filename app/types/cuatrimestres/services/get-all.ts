@@ -1,12 +1,12 @@
 import type { Cuatrimestre, CuatrimestreEstadoType } from "../index";
 
 export interface GetAllCuatrimestresRequest {
-  año?: number;
+  año?: string;
   fechaInicio?: string; // formato YYYY-MM-DD
   fechaFin?: string; // formato YYYY-MM-DD
-  actual?: boolean;
-  page?: number;
-  limit?: number;
+  actual?: string;
+  page?: string;
+  limit?: string;
   token: string;
 }
 

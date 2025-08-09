@@ -7,7 +7,7 @@ import { Button } from "../components/ui/Button";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { useAsignaturaByNombre } from "../hooks/useAsignaturaByNombre";
 import { Card } from "../components/ui/Card";
-import { cargaAcademicaService } from "../services/carga-academica.service";
+import { getAllCargaAcademica } from "../services/coordinadores/carga-academica.service";
 import type { CargaAcademica } from "../types/carga-academica";
 
 // Componente para mostrar una card de asignatura con datos del backend
@@ -29,7 +29,7 @@ function AsignaturaCardWithData({
           <div className="mb-2 w-3/4 h-4 bg-gray-200 rounded"></div>
           <div className="w-1/2 h-3 bg-gray-200 rounded"></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="mt-2 text-xs text-gray-500">
           Cargando: {nombreAsignatura}
         </p>
       </Card>
@@ -42,7 +42,7 @@ function AsignaturaCardWithData({
         <p className="text-sm text-red-600">
           Error al cargar: {nombreAsignatura}
         </p>
-        <p className="text-xs text-gray-500 mt-1">{error}</p>
+        <p className="mt-1 text-xs text-gray-500">{error}</p>
       </Card>
     );
   }
@@ -70,7 +70,7 @@ function AsignaturaCardWithData({
 export default function GrupoPage() {
   const { grupoId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, accessToken } = useAuthStore();
   const {
     grupo,
     isLoading: grupoLoading,
@@ -93,11 +93,19 @@ export default function GrupoPage() {
   // Cargar las cargas académicas del profesor logueado
   useEffect(() => {
     const fetchMisCargasAcademicas = async () => {
+      if (!accessToken) {
+        setCargasError("No hay token de autenticación");
+        return;
+      }
+
       try {
         setCargasLoading(true);
         setCargasError(null);
-        const data = await cargaAcademicaService.getMiCargaActual();
-        setMisCargasAcademicas(data);
+        const data = await getAllCargaAcademica({
+          grupoId: grupoId!,
+          token: accessToken,
+        });
+        setMisCargasAcademicas(data.data);
       } catch (err) {
         setCargasError(
           err instanceof Error ? err.message : "Error al cargar mis asignaturas"
@@ -107,10 +115,10 @@ export default function GrupoPage() {
       }
     };
 
-    if (isAuthenticated) {
+    if (isAuthenticated && accessToken) {
       fetchMisCargasAcademicas();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, accessToken, grupoId]);
 
   // Filtrar las cargas académicas que pertenecen al grupo actual
   const cargasDelGrupo = misCargasAcademicas.filter(
