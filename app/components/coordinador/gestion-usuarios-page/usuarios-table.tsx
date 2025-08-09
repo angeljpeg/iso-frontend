@@ -306,7 +306,12 @@ export const UsuariosTable = () => {
       />
 
       <div className="bg-white rounded-lg border">
-        <DataTable columns={columns} data={usuarios} />
+        <DataTable
+          loading={isLoading}
+          emptyMessage="No se encontraron usuarios"
+          columns={columns}
+          data={usuarios}
+        />
 
         <Pagination
           currentPage={pagination.page}

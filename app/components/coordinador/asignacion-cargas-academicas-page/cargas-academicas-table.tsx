@@ -283,7 +283,12 @@ export const CargasAcademicasTable = () => {
       />
 
       <div className="bg-white rounded-lg border">
-        <DataTable columns={columns} data={cargasAcademicas} />
+        <DataTable
+          loading={isLoading}
+          emptyMessage="No se encontraron cargas académicas"
+          columns={columns}
+          data={cargasAcademicas}
+        />
 
         <Pagination
           currentPage={pagination.page}
