@@ -1,12 +1,13 @@
-export interface CreateCargaAcademicaRequest {
+export interface UpdateCargaAcademicaRequest {
   token: string;
-  profesorId: string;
-  carrera: string;
-  asignatura: string;
-  grupoId: string;
+  id: string;
+  profesorId?: string;
+  carrera?: string;
+  asignatura?: string;
+  grupoId?: string;
 }
 
-export interface CreateCargaAcademicaResponse {
+export interface UpdateCargaAcademicaResponse {
   id: string;
   profesorId: string;
   carrera: string;
