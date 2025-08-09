@@ -211,13 +211,11 @@ export const CargasAcademicasTable = () => {
     profesorId?: string;
     carrera?: string;
     grupoId?: string;
+    cuatrimestreId?: string;
     activo?: boolean;
+    actual?: boolean;
   }) => {
     updateFilters(filters);
-  };
-
-  const handleClearFilters = () => {
-    clearFilters();
   };
 
   const handlePageChange = (page: number) => {
@@ -272,16 +270,16 @@ export const CargasAcademicasTable = () => {
       />
 
       <CargasAcademicasFilters
-      /*         onSearch={handleSearch}
         onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
+        onClearFilters={clearFilters}
         currentFilters={{
-          search: options.asignatura || "",
           profesorId: options.profesorId,
           carrera: options.carrera,
           grupoId: options.grupoId,
+          cuatrimestreId: options.cuatrimestreId,
           activo: options.activo,
-        }} */
+          actual: options.actual,
+        }}
       />
 
       <div className="bg-white rounded-lg border">
