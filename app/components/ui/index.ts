@@ -4,3 +4,6 @@ export { Card } from "./Card";
 export { EstadoBadge } from "./EstadoBadge";
 export { IndicadorRetraso } from "./IndicadorRetraso";
 export { ModalJustificacion } from "./ModalJustificacion";
+export { Checkbox } from "./checkbox";
+export { Textarea } from "./textarea";
+export { Label } from "./label";

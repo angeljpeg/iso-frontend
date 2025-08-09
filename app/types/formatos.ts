@@ -42,7 +42,7 @@ export const FORMATOS_ISO: FormatoCard[] = [
     titulo: "Reporte Mensual de Avances de Estadías",
     descripcion: "Seguimiento mensual del progreso de estudiantes en estadías",
     icono: "📊",
-    ruta: "/estadias",
+    ruta: "/reporte-estadias",
     disponible: true,
     color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
   },

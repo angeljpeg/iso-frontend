@@ -7,6 +7,7 @@ export default [
   route("asesorias", "routes/asesorias.tsx"),
   route("tutorias", "routes/tutorias.tsx"),
   route("estadias", "routes/estadias.tsx"),
+  route("reporte-estadias", "routes/reporte-estadias.tsx"),
   route("seguimiento", "routes/seguimiento.tsx"),
   route("seguimientos", "routes/seguimientos.tsx"),
   route("grupo/:grupoId", "routes/grupo.tsx"),
