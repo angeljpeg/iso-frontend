@@ -25,8 +25,7 @@ export function useCarreras() {
       const response = await getCarrerasDisponibles({
         token: accessToken,
       });
-
-      setCarreras(response.data);
+      setCarreras(response.data); // En lugar de response.data.data
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar carreras";

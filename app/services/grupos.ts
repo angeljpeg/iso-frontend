@@ -269,7 +269,7 @@ export const getCarrerasDisponibles = async (
   try {
     const { token } = request;
 
-    const response = await fetch(`${GRUPOS_URL}/carreras`, {
+    const response = await fetch(`${GRUPOS_URL}/carreras/all`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
