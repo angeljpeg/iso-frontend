@@ -1,9 +1,9 @@
 // Enum para roles de usuario
 export enum RolUsuario {
-  COORDINADOR = 'coordinador',
-  MODERADOR = 'moderador',
-  PROFESOR_TIEMPO_COMPLETO = 'profesor_tiempo_completo',
-  PROFESOR_ASIGNATURA = 'profesor_asignatura',
+  COORDINADOR = "coordinador",
+  MODERADOR = "moderador",
+  PROFESOR_TIEMPO_COMPLETO = "profesor_tiempo_completo",
+  PROFESOR_ASIGNATURA = "profesor_asignatura",
 }
 
 // Usuario/Profesor interface

@@ -1,4 +1,4 @@
-import { Cuatrimestre } from '../cuatrimestres';
+import type { Cuatrimestre } from "../cuatrimestres";
 
 export interface Grupo {
   id: string;
@@ -13,4 +13,4 @@ export interface Grupo {
   updatedAt: string;
 }
 
-export * from './services';
+export * from "./services";
