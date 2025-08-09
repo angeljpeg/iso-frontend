@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,6 +27,8 @@ import { createCargaAcademica } from "~/services/coordinadores/carga-academica.s
 import { useAuthStore } from "~/store/auth";
 import { useUsuarios } from "~/hooks/useUsuarios";
 import { useGrupos } from "~/hooks/useGrupos";
+import { useCargaAcademica } from "~/hooks/useCargaAcademica";
+import { useCarreras } from "~/hooks/useCarreras";
 import { RolUsuarioEnum } from "~/types/usuarios";
 
 // Schema de validación con Zod
@@ -63,7 +65,7 @@ export const CrearCargaAcademicaModal = ({
   const { usuarios: profesores } = useUsuarios({
     rol: RolUsuarioEnum.PROFESOR_TIEMPO_COMPLETO,
     activo: true,
-    limit: 100, // Obtener todos los profesores activos
+    limit: 100,
   });
 
   const { usuarios: profesoresAsignatura } = useUsuarios({
@@ -74,8 +76,11 @@ export const CrearCargaAcademicaModal = ({
 
   const { grupos } = useGrupos({
     activo: true,
-    limit: 100, // Obtener todos los grupos activos
+    limit: 100,
   });
+
+  // Hook para obtener carreras dinámicamente
+  const { carreras } = useCarreras();
 
   const form = useForm<CreateCargaAcademicaFormData>({
     resolver: zodResolver(
@@ -88,6 +93,43 @@ export const CrearCargaAcademicaModal = ({
       grupoId: "",
     },
   });
+
+  // Observar cambios en la carrera seleccionada
+  const selectedCarrera = form.watch("carrera");
+
+  // Hook para obtener cargas académicas existentes filtradas por carrera
+  const { cargasAcademicas } = useCargaAcademica({
+    carrera: selectedCarrera || undefined,
+    limit: 1000, // Obtener todas las cargas para extraer asignaturas
+  });
+
+  // Extraer asignaturas únicas de las cargas académicas existentes
+  const asignaturasDisponibles = useMemo(() => {
+    if (!selectedCarrera || !cargasAcademicas.length) {
+      return [];
+    }
+
+    // Extraer asignaturas únicas de la carrera seleccionada
+    const asignaturasUnicas = Array.from(
+      new Set(
+        cargasAcademicas
+          .filter((carga) => carga.carrera === selectedCarrera)
+          .map((carga) => carga.asignatura)
+      )
+    );
+
+    return asignaturasUnicas.map((asignatura) => ({
+      value: asignatura,
+      label: asignatura,
+    }));
+  }, [selectedCarrera, cargasAcademicas]);
+
+  // Limpiar asignatura cuando cambie la carrera
+  useEffect(() => {
+    if (selectedCarrera) {
+      form.setValue("asignatura", "");
+    }
+  }, [selectedCarrera, form]);
 
   // Combinar profesores de tiempo completo y asignatura
   const todosProfesores = [...profesores, ...profesoresAsignatura];
@@ -102,13 +144,11 @@ export const CrearCargaAcademicaModal = ({
     label: grupo.nombreGenerado,
   }));
 
-  const carreraOptions = [
-    { value: "Ingeniería en Sistemas Computacionales", label: "Ingeniería en Sistemas Computacionales" },
-    { value: "Ingeniería Industrial", label: "Ingeniería Industrial" },
-    { value: "Ingeniería en Gestión Empresarial", label: "Ingeniería en Gestión Empresarial" },
-    { value: "Ingeniería Mecatrónica", label: "Ingeniería Mecatrónica" },
-    { value: "Ingeniería en Energías Renovables", label: "Ingeniería en Energías Renovables" },
-  ];
+  // Opciones de carrera dinámicas
+  const carreraOptions = carreras.map((carrera) => ({
+    value: carrera.nombre,
+    label: carrera.nombre,
+  }));
 
   const onSubmit = async (data: CreateCargaAcademicaFormData) => {
     if (!accessToken) {
@@ -135,7 +175,9 @@ export const CrearCargaAcademicaModal = ({
       onSuccess?.();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Error al crear carga académica";
+        error instanceof Error
+          ? error.message
+          : "Error al crear carga académica";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -153,7 +195,8 @@ export const CrearCargaAcademicaModal = ({
         <DialogHeader>
           <DialogTitle>Crear Nueva Carga Académica</DialogTitle>
           <DialogDescription>
-            Complete los datos para asignar una nueva carga académica a un profesor.
+            Complete los datos para asignar una nueva carga académica a un
+            profesor.
           </DialogDescription>
         </DialogHeader>
 
@@ -204,13 +247,36 @@ export const CrearCargaAcademicaModal = ({
                 <FormItem>
                   <FormLabel>Asignatura *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Ingrese el nombre de la asignatura"
-                      {...field}
-                      disabled={isLoading}
-                    />
+                    {selectedCarrera && asignaturasDisponibles.length > 0 ? (
+                      <FormSelect
+                        options={[...asignaturasDisponibles]}
+                        placeholder="Seleccione una asignatura"
+                        {...field}
+                        disabled={isLoading}
+                        onChange={(value) => {
+                          field.onChange(value);
+                        }}
+                      />
+                    ) : selectedCarrera ? (
+                      <Input
+                        placeholder="Ingrese el nombre de la asignatura"
+                        {...field}
+                        disabled={isLoading}
+                      />
+                    ) : (
+                      <Input
+                        placeholder="Primero seleccione una carrera"
+                        disabled={true}
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
+                  {selectedCarrera && asignaturasDisponibles.length === 0 && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      No hay asignaturas registradas para esta carrera. Puede
+                      crear una nueva.
+                    </p>
+                  )}
                 </FormItem>
               )}
             />
