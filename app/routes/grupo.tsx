@@ -7,7 +7,7 @@ import { Button } from "../components/ui/Button";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { useAsignaturaByNombre } from "../hooks/useAsignaturaByNombre";
 import { Card } from "../components/ui/Card";
-import { cargaAcademicaService } from "../services/carga-academica";
+import { cargaAcademicaService } from "../services/carga-academica.service";
 import type { CargaAcademica } from "../types/carga-academica";
 
 // Componente para mostrar una card de asignatura con datos del backend
@@ -29,7 +29,9 @@ function AsignaturaCardWithData({
           <div className="mb-2 w-3/4 h-4 bg-gray-200 rounded"></div>
           <div className="w-1/2 h-3 bg-gray-200 rounded"></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Cargando: {nombreAsignatura}</p>
+        <p className="text-xs text-gray-500 mt-2">
+          Cargando: {nombreAsignatura}
+        </p>
       </Card>
     );
   }
@@ -55,9 +57,7 @@ function AsignaturaCardWithData({
       className="p-4 transition-shadow duration-200 cursor-pointer hover:shadow-md hover:bg-gray-50"
       onClick={handleClick}
     >
-      <h3 className="mb-1 font-semibold text-gray-900">
-        {asignatura.nombre}
-      </h3>
+      <h3 className="mb-1 font-semibold text-gray-900">{asignatura.nombre}</h3>
       {carrera && <p className="mb-2 text-sm text-gray-600">{carrera}</p>}
       <p className="text-xs text-gray-500">
         {asignatura.temas?.length || 0} temas • {asignatura.horasProgramadas}{" "}
@@ -71,10 +71,16 @@ export default function GrupoPage() {
   const { grupoId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { grupo, isLoading: grupoLoading, error: grupoError } = useGrupo(grupoId!);
-  
+  const {
+    grupo,
+    isLoading: grupoLoading,
+    error: grupoError,
+  } = useGrupo(grupoId!);
+
   // Estado para las cargas académicas del profesor logueado
-  const [misCargasAcademicas, setMisCargasAcademicas] = useState<CargaAcademica[]>([]);
+  const [misCargasAcademicas, setMisCargasAcademicas] = useState<
+    CargaAcademica[]
+  >([]);
   const [cargasLoading, setCargasLoading] = useState(true);
   const [cargasError, setCargasError] = useState<string | null>(null);
 
@@ -93,7 +99,9 @@ export default function GrupoPage() {
         const data = await cargaAcademicaService.getMiCargaActual();
         setMisCargasAcademicas(data);
       } catch (err) {
-        setCargasError(err instanceof Error ? err.message : "Error al cargar mis asignaturas");
+        setCargasError(
+          err instanceof Error ? err.message : "Error al cargar mis asignaturas"
+        );
       } finally {
         setCargasLoading(false);
       }
@@ -105,7 +113,9 @@ export default function GrupoPage() {
   }, [isAuthenticated]);
 
   // Filtrar las cargas académicas que pertenecen al grupo actual
-  const cargasDelGrupo = misCargasAcademicas.filter(carga => carga.grupoId === grupoId);
+  const cargasDelGrupo = misCargasAcademicas.filter(
+    (carga) => carga.grupoId === grupoId
+  );
 
   const handleBackToDashboard = () => {
     navigate("/dashboard");
@@ -227,7 +237,8 @@ export default function GrupoPage() {
                         No tienes asignaturas asignadas en este grupo
                       </h4>
                       <p className="text-gray-500">
-                        No tienes asignaturas asignadas en este grupo específico.
+                        No tienes asignaturas asignadas en este grupo
+                        específico.
                       </p>
                     </div>
                   </div>

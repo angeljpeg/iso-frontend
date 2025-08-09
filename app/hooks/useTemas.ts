@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { cargaAcademicaService } from "../services/carga-academica";
+import { cargaAcademicaService } from "../services/carga-academica.service";
 import type { Tema } from "../types/carga-academica";
 
 export function useTemas(asignaturaId: string) {

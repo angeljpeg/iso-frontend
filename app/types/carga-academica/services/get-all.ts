@@ -8,6 +8,7 @@ export interface GetAllCargaAcademicaRequest {
   carrera?: string;
   asignatura?: string;
   activo?: string;
+  actual?: string;
   page?: string;
   limit?: string;
 }
