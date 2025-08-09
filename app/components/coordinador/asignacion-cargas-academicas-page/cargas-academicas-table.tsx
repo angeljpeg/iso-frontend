@@ -257,9 +257,9 @@ export const CargasAcademicasTable = () => {
       </header>
 
       <CrearCargaAcademicaModal
-      /*         open={isModalOpen}
+        open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onSuccess={refetch} */
+        onSuccess={refetch}
       />
 
       <EditarCargaAcademicaModal
