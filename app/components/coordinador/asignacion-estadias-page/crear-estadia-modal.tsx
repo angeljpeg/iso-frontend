@@ -77,6 +77,7 @@ export function CrearEstadiaModal({
     try {
       setIsSubmitting(true);
       await create({
+        profesorId: data.profesorId, // Agregar este campo
         periodo: data.periodo,
         observacionesGenerales: data.observacionesGenerales,
       });
@@ -105,6 +106,19 @@ export function CrearEstadiaModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Profesor *</label>
+            <FormSelect
+              options={profesorOptions}
+              value={watch("profesorId") || ""}
+              onChange={(value) => setValue("profesorId", value.target.value)}
+              placeholder="Seleccionar profesor"
+            />
+            {errors.profesorId && (
+              <p className="text-sm text-red-600">{errors.profesorId.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Período *</label>
             <FormSelect

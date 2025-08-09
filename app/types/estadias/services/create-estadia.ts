@@ -1,14 +1,15 @@
 export interface CreateEstadiaRequest {
-  token: string;
+  profesorId: string;
   periodo: string;
   observacionesGenerales?: string;
+  token: string;
 }
 
 export interface CreateEstadiaResponse {
   id: string;
   profesorId: string;
   periodo: string;
-  observacionesGenerales: string | null;
+  observacionesGenerales?: string;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
