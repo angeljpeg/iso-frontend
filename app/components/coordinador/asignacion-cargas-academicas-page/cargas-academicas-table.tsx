@@ -18,32 +18,27 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Badge } from "~/components/ui/badge";
 import { toast } from "sonner";
-import { useUsuarios } from "~/hooks/useUsuarios";
+import { useCargaAcademica } from "~/hooks/useCargaAcademica";
 import { CargasAcademicasFilters } from "./cargas-academicas-filters";
 import { CrearCargaAcademicaModal } from "./crear-carga-academica";
 import { EditarCargaAcademicaModal } from "./editar-carga-academica";
-import {
-  type Usuario,
-  type RolUsuarioType,
-  RolUsuarioEnum,
-} from "~/types/usuarios";
-import {
-  deactivateUsuario,
-  reactivateUsuario,
-} from "~/services/coordinadores/usuarios.service";
+import type { CargaAcademica } from "~/types/carga-academica";
+import { deleteCargaAcademica } from "~/services/coordinadores/carga-academica.service";
 import { useAuthStore } from "~/store/auth";
 
 export const CargasAcademicasTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
+  const [selectedCarga, setSelectedCarga] = useState<CargaAcademica | null>(
+    null
+  );
   const [loadingActions, setLoadingActions] = useState<Record<string, boolean>>(
     {}
   );
   const { accessToken } = useAuthStore();
 
   const {
-    usuarios,
+    cargasAcademicas,
     isLoading,
     error,
     pagination,
@@ -52,113 +47,102 @@ export const CargasAcademicasTable = () => {
     updatePage,
     clearFilters,
     refetch,
-  } = useUsuarios({
-    limit: 2,
+  } = useCargaAcademica({
+    limit: 10,
     page: 1,
   });
 
-  const handleEdit = (usuario: Usuario) => {
-    setSelectedUsuario(usuario);
+  const handleEdit = (carga: CargaAcademica) => {
+    setSelectedCarga(carga);
     setIsEditModalOpen(true);
   };
 
-  const handleDeactivate = async (usuarioId: string) => {
+  const handleDelete = async (cargaId: string) => {
     if (!accessToken) {
       toast.error("No hay token de autenticación");
       return;
     }
 
-    setLoadingActions((prev) => ({ ...prev, [usuarioId]: true }));
+    setLoadingActions((prev) => ({ ...prev, [cargaId]: true }));
 
     try {
-      await deactivateUsuario({ token: accessToken, id: usuarioId });
-      toast.success("Usuario desactivado exitosamente");
+      await deleteCargaAcademica({ token: accessToken, id: cargaId });
+      toast.success("Carga académica eliminada exitosamente");
       refetch();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Error al desactivar usuario";
+        error instanceof Error
+          ? error.message
+          : "Error al eliminar carga académica";
       toast.error(errorMessage);
     } finally {
-      setLoadingActions((prev) => ({ ...prev, [usuarioId]: false }));
+      setLoadingActions((prev) => ({ ...prev, [cargaId]: false }));
     }
   };
 
-  const handleReactivate = async (usuarioId: string) => {
-    if (!accessToken) {
-      toast.error("No hay token de autenticación");
-      return;
-    }
-
-    setLoadingActions((prev) => ({ ...prev, [usuarioId]: true }));
-
-    try {
-      await reactivateUsuario({ token: accessToken, id: usuarioId });
-      toast.success("Usuario reactivado exitosamente");
-      refetch();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Error al reactivar usuario";
-      toast.error(errorMessage);
-    } finally {
-      setLoadingActions((prev) => ({ ...prev, [usuarioId]: false }));
-    }
-  };
-
-  const columns: ColumnDef<Usuario>[] = [
+  const columns: ColumnDef<CargaAcademica>[] = [
     {
-      accessorKey: "nombre",
+      accessorKey: "profesor.nombre",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Nombre
+            Profesor
             <ArrowUpDown className="ml-2 w-4 h-4" />
           </Button>
         );
       },
-    },
-    {
-      accessorKey: "apellido",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Apellido
-            <ArrowUpDown className="ml-2 w-4 h-4" />
-          </Button>
-        );
-      },
-    },
-    {
-      accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 w-4 h-4" />
-          </Button>
-        );
-      },
-    },
-    {
-      accessorKey: "rol",
-      header: "Rol",
       cell: ({ row }) => {
-        const rol = row.getValue("rol") as RolUsuarioType;
-        const rolLabels = {
-          [RolUsuarioEnum.COORDINADOR]: "Coordinador",
-          [RolUsuarioEnum.MODERADOR]: "Moderador",
-          [RolUsuarioEnum.PROFESOR_TIEMPO_COMPLETO]: "Profesor Tiempo Completo",
-          [RolUsuarioEnum.PROFESOR_ASIGNATURA]: "Profesor Asignatura",
-        };
-        return <Badge variant="outline">{rolLabels[rol] || rol}</Badge>;
+        const carga = row.original;
+        return `${carga.profesor.nombre} ${carga.profesor.apellido}`;
+      },
+    },
+    {
+      accessorKey: "carrera",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Carrera
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "asignatura",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Asignatura
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "grupo.nombreGenerado",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Grupo
+            <ArrowUpDown className="ml-2 w-4 h-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const carga = row.original;
+        return carga.grupo.nombreGenerado;
       },
     },
     {
@@ -177,7 +161,7 @@ export const CargasAcademicasTable = () => {
       accessorKey: "createdAt",
       header: "Fecha de Creación",
       cell: ({ row }) => {
-        const fecha = new Date(row.getValue("createdAt") as Date);
+        const fecha = new Date(row.getValue("createdAt") as string);
         return fecha.toLocaleDateString("es-ES");
       },
     },
@@ -185,8 +169,8 @@ export const CargasAcademicasTable = () => {
       id: "actions",
       header: "Acciones",
       cell: ({ row }) => {
-        const usuario = row.original;
-        const isLoading = loadingActions[usuario.id] || false;
+        const carga = row.original;
+        const isLoading = loadingActions[carga.id] || false;
 
         return (
           <DropdownMenu>
@@ -198,31 +182,20 @@ export const CargasAcademicasTable = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => handleEdit(usuario)}
-                disabled={!usuario.activo || isLoading}
+                onClick={() => handleEdit(carga)}
+                disabled={!carga.activo || isLoading}
               >
                 <Edit className="mr-2 w-4 h-4" />
                 Editar
               </DropdownMenuItem>
-              {usuario.activo ? (
-                <DropdownMenuItem
-                  onClick={() => handleDeactivate(usuario.id)}
-                  disabled={isLoading}
-                  className="text-red-600"
-                >
-                  <UserX className="mr-2 w-4 h-4" />
-                  Desactivar
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() => handleReactivate(usuario.id)}
-                  disabled={isLoading}
-                  className="text-green-600"
-                >
-                  <UserCheck className="mr-2 w-4 h-4" />
-                  Reactivar
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                onClick={() => handleDelete(carga.id)}
+                disabled={isLoading}
+                className="text-red-600"
+              >
+                <UserX className="mr-2 w-4 h-4" />
+                Eliminar
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -231,12 +204,14 @@ export const CargasAcademicasTable = () => {
   ];
 
   const handleSearch = (search: string) => {
-    updateFilters({ search: search || undefined });
+    updateFilters({ asignatura: search || undefined });
   };
 
   const handleFilterChange = (filters: {
-    rol?: RolUsuarioType;
-    estado?: boolean;
+    profesorId?: string;
+    carrera?: string;
+    grupoId?: string;
+    activo?: boolean;
   }) => {
     updateFilters(filters);
   };
@@ -254,7 +229,7 @@ export const CargasAcademicasTable = () => {
       <div className="flex justify-center items-center p-8">
         <div className="text-center">
           <div className="mx-auto mb-2 w-8 h-8 rounded-full border-b-2 border-gray-900 animate-spin"></div>
-          <p>Cargando usuarios...</p>
+          <p>Cargando cargas académicas...</p>
         </div>
       </div>
     );
@@ -275,10 +250,12 @@ export const CargasAcademicasTable = () => {
     <div className="space-y-6">
       <header className="flex justify-between items-center">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Usuarios</h1>
+          <h1 className="text-2xl font-bold">Cargas Académicas</h1>
         </div>
 
-        <Button onClick={() => setIsModalOpen(true)}>Crear Usuario</Button>
+        <Button onClick={() => setIsModalOpen(true)}>
+          Crear Carga Académica
+        </Button>
       </header>
 
       <CrearCargaAcademicaModal
@@ -290,7 +267,7 @@ export const CargasAcademicasTable = () => {
       <EditarCargaAcademicaModal
       /*         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        usuario={selectedUsuario}
+        carga={selectedCarga}
         onSuccess={refetch} */
       />
 
@@ -299,14 +276,16 @@ export const CargasAcademicasTable = () => {
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
         currentFilters={{
-          search: options.search || "",
-          rol: options.rol,
+          search: options.asignatura || "",
+          profesorId: options.profesorId,
+          carrera: options.carrera,
+          grupoId: options.grupoId,
           activo: options.activo,
         }} */
       />
 
       <div className="bg-white rounded-lg border">
-        <DataTable columns={columns} data={usuarios} />
+        <DataTable columns={columns} data={cargasAcademicas} />
 
         <Pagination
           currentPage={pagination.page}
