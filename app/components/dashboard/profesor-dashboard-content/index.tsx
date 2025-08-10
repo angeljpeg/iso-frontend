@@ -19,6 +19,10 @@ export function ProfesorDashboardContent() {
         : formato.disponible,
   }));
 
+  const gruposAsignados = cargasAcademicas.filter(
+    (carga) => carga.profesorId === usuario?.id
+  );
+
   const handleGrupoClick = (grupoId: string) => {
     navigate(`/grupo/${grupoId}`);
   };
@@ -34,7 +38,7 @@ export function ProfesorDashboardContent() {
       <FormatosSection formatos={formatosDisponibles} />
 
       <GruposSection
-        cargasAcademicas={cargasAcademicas}
+        cargasAcademicas={gruposAsignados}
         isLoading={isLoading}
         error={error}
         onGrupoClick={handleGrupoClick}
