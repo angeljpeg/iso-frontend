@@ -4,7 +4,6 @@ import { useAuthStore } from "../store/auth";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { useGrupo } from "../hooks/useGrupo";
 import { Button } from "../components/ui/Button";
-import { ProtectedRoute } from "../components/ProtectedRoute";
 import { useAsignaturaByNombre } from "../hooks/useAsignaturaByNombre";
 import { Card } from "../components/ui/Card";
 import { getAllCargaAcademica } from "../services/coordinadores/carga-academica.service";
@@ -48,7 +47,7 @@ function AsignaturaCardWithData({
   }
 
   const handleClick = () => {
-    const encodedName = encodeURIComponent(asignatura.nombre);
+    const encodedName = encodeURIComponent(asignatura);
     navigate(`/asignatura/${encodedName}`);
   };
 

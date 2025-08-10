@@ -1,4 +1,4 @@
-import type { Asignatura } from "../types/carga-academica";
+import type { Asignatura } from "../types/asignaturas";
 import type { AuthError } from "../types/auth";
 import { getAuthHeaders, handleAuthError } from "../utils/auth";
 
@@ -22,7 +22,7 @@ class AsignaturasService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      handleAuthError(response.status);
+      handleAuthError();
 
       const error: AuthError = await response.json();
       throw new Error(error.message || "Error en la solicitud");
@@ -34,9 +34,12 @@ class AsignaturasService {
   async getAsignaturaByNombre(nombre: string): Promise<Asignatura> {
     // Codificar el nombre para manejar espacios y caracteres especiales
     const encodedNombre = encodeURIComponent(nombre);
-    return this.makeRequest<Asignatura>(`/asignaturas/${encodedNombre}/completa`, {
-      method: "GET",
-    });
+    return this.makeRequest<Asignatura>(
+      `/asignaturas/${encodedNombre}/completa`,
+      {
+        method: "GET",
+      }
+    );
   }
 
   async getAllAsignaturas(): Promise<Asignatura[]> {

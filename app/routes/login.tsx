@@ -75,7 +75,6 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            loading={isLoading}
             disabled={isLoading}
             className="w-full"
             size="lg"
@@ -83,18 +82,6 @@ export default function LoginPage() {
             {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </Button>
         </form>
-
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            ¿No tienes una cuenta?{" "}
-            <a
-              href="#"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Contacta al administrador
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );

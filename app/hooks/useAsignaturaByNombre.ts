@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { asignaturasService } from "../services/asignaturas";
-import type { Asignatura } from "../types/carga-academica";
+import type { Asignatura } from "../types/asignaturas";
 
 export function useAsignaturaByNombre(nombre: string | undefined) {
   const navigate = useNavigate();
