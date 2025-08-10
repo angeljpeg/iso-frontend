@@ -1,13 +1,26 @@
 import { useCargaAcademica } from "../../../hooks/useCargaAcademica";
+import { useEstadias } from "../../../hooks/estadias-hooks";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../../../store/auth";
 import { FORMATOS_ISO } from "../../../types/formatos";
 import { FormatosSection } from "./FormatosSection";
 import { GruposSection } from "./GruposSection";
+import { EstadiasSection } from "./EstadiasSection";
 
 export function ProfesorDashboardContent() {
   const navigate = useNavigate();
-  const { cargasAcademicas, isLoading, error, refetch } = useCargaAcademica();
+  const {
+    cargasAcademicas,
+    isLoading: isLoadingCargas,
+    error: errorCargas,
+    refetch: refetchCargas,
+  } = useCargaAcademica();
+  const {
+    estadias,
+    isLoading: isLoadingEstadias,
+    error: errorEstadias,
+    refetch: refetchEstadias,
+  } = useEstadias({ onlyMyEstadias: true });
   const { usuario } = useAuthStore();
 
   // Filtrar formatos según el rol del usuario
@@ -23,13 +36,27 @@ export function ProfesorDashboardContent() {
     (carga) => carga.profesorId === usuario?.id
   );
 
+  const estadiasAsignadas = estadias.filter(
+    (estadia) => estadia.profesorId === usuario?.id
+  );
+
   const handleGrupoClick = (grupoId: string) => {
     navigate(`/grupo/${grupoId}`);
   };
 
-  const handleRetry = () => {
-    if (refetch) {
-      refetch();
+  const handleEstadiaClick = (estadiaId: string) => {
+    navigate(`/estadias/${estadiaId}`);
+  };
+
+  const handleRetryCargas = () => {
+    if (refetchCargas) {
+      refetchCargas();
+    }
+  };
+
+  const handleRetryEstadias = () => {
+    if (refetchEstadias) {
+      refetchEstadias();
     }
   };
 
@@ -39,10 +66,18 @@ export function ProfesorDashboardContent() {
 
       <GruposSection
         cargasAcademicas={gruposAsignados}
-        isLoading={isLoading}
-        error={error}
+        isLoading={isLoadingCargas}
+        error={errorCargas}
         onGrupoClick={handleGrupoClick}
-        onRetry={handleRetry}
+        onRetry={handleRetryCargas}
+      />
+
+      <EstadiasSection
+        estadias={estadiasAsignadas}
+        isLoading={isLoadingEstadias}
+        error={errorEstadias}
+        onEstadiaClick={handleEstadiaClick}
+        onRetry={handleRetryEstadias}
       />
     </div>
   );
