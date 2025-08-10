@@ -2,7 +2,8 @@ import type { UpdateSeguimientoDetalleDto, SeguimientoDetalle } from "../index";
 
 export interface UpdateSeguimientoDetalleRequest {
   token: string;
-  id: string;
+  seguimientoId: string;
+  detalleId: string;
   data: UpdateSeguimientoDetalleDto;
 }
 

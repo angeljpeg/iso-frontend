@@ -5,6 +5,4 @@ export interface GetSeguimientosByCargaAcademicaRequest {
   cargaAcademicaId: string;
 }
 
-export interface GetSeguimientosByCargaAcademicaResponse {
-  data: SeguimientoCurso[];
-}
+export interface GetSeguimientosByCargaAcademicaResponse extends Array<SeguimientoCurso> {}

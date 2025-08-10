@@ -6,7 +6,10 @@ import {
   updateSeguimientoDetalle,
   deleteSeguimientoDetalle,
 } from "~/services/programacion-curso.service";
-import type { CreateSeguimientoDetalleDto, UpdateSeguimientoDetalleDto } from "~/types/programacion-curso";
+import type {
+  CreateSeguimientoDetalleDto,
+  UpdateSeguimientoDetalleDto,
+} from "~/types/programacion-curso";
 
 export function useSeguimientoDetalleActions() {
   const navigate = useNavigate();
@@ -48,7 +51,7 @@ export function useSeguimientoDetalleActions() {
 
         const response = await createSeguimientoDetalle({
           token: accessToken,
-          ...detalleData,
+          data: detalleData,
         });
 
         return response.data;
@@ -63,7 +66,7 @@ export function useSeguimientoDetalleActions() {
   );
 
   const updateDetalle = useCallback(
-    async (id: string, detalleData: UpdateSeguimientoDetalleDto) => {
+    async (seguimientoId: string, detalleId: string, detalleData: UpdateSeguimientoDetalleDto) => {
       if (!accessToken) {
         setError("No hay token de autenticación");
         navigate("/login");
@@ -76,8 +79,9 @@ export function useSeguimientoDetalleActions() {
 
         const response = await updateSeguimientoDetalle({
           token: accessToken,
-          id,
-          ...detalleData,
+          seguimientoId,
+          detalleId,
+          data: detalleData,
         });
 
         return response.data;

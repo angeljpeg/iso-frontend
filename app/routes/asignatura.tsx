@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   useAsignaturaCompleta,
   useTemasAsignatura,
 } from "../hooks/asignaturas";
 import { useCargaAcademica } from "../hooks/useCargaAcademica";
+import { useSeguimientosByCargaAcademica } from "../hooks/programacion-curso";
 import { TemaCard } from "../components/TemaCard";
 import { Button } from "../components/ui/Button";
 import { DashboardLayout } from "../layouts/DashboardLayout";
@@ -26,12 +27,13 @@ export default function AsignaturaPage() {
     isLoading: isLoadingAsignatura,
     error: errorAsignatura,
   } = useAsignaturaCompleta(asignaturaId!);
+  console.log("asignatura: ", asignatura);
   const {
     temas,
     isLoading: isLoadingTemas,
     error: errorTemas,
   } = useTemasAsignatura(asignaturaId!);
-
+  console.log("temas: ", temas);
   // Hook para obtener carga académica relacionada con esta asignatura
   const {
     cargasAcademicas,
@@ -39,10 +41,23 @@ export default function AsignaturaPage() {
     error: errorCarga,
   } = useCargaAcademica({
     asignatura: asignaturaId,
+    profesorId: usuario?.id,
     actual: true,
     activo: true,
   });
+  console.log("cargasAcademicas: ", cargasAcademicas);
 
+  // Hook para obtener seguimientos por carga académica
+  const {
+    seguimientos,
+    isLoading: isLoadingSeguimientos,
+    error: errorSeguimientos,
+    refresh: refreshSeguimientos,
+  } = useSeguimientosByCargaAcademica({
+    cargaAcademicaId: cargasAcademicas[0]?.id,
+    autoFetch: true, // Activamos autoFetch para que se ejecute automáticamente
+  });
+  console.log("seguimientos: ", seguimientos);
   // Modal hooks
   const {
     isOpen: isCrearOpen,
@@ -52,12 +67,21 @@ export default function AsignaturaPage() {
   const {
     isOpen: isDetalleOpen,
     openModal: openDetalle,
-    closeModal: closeDetalle,
+    closeModal: closeDetalleBase,
   } = useModal();
+
+  // Función personalizada para cerrar el modal con limpieza
+  const closeDetalle = () => {
+    // Limpiar el estado del detalle existente
+    setDetalleExistente(null);
+    // Cerrar el modal base
+    closeDetalleBase();
+  };
   const { showAlert } = useModalContext();
 
   const [selectedTema, setSelectedTema] = useState<Tema | null>(null);
   const [seguimientoId, setSeguimientoId] = useState<string>("");
+  const [detalleExistente, setDetalleExistente] = useState<any>(null);
 
   const isCoordinador = usuario?.rol === "coordinador";
   const isProfesor =
@@ -66,6 +90,15 @@ export default function AsignaturaPage() {
 
   // Obtener la primera carga académica (asumiendo que solo hay una por asignatura)
   const cargaAcademica = cargasAcademicas[0];
+
+  // Limpiar estado cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      setDetalleExistente(null);
+      setSelectedTema(null);
+      setSeguimientoId("");
+    };
+  }, []);
 
   const handleTemaClick = async (tema: Tema) => {
     if (!usuario) return;
@@ -78,34 +111,30 @@ export default function AsignaturaPage() {
       try {
         // Verificar si ya existe un seguimiento para esta carga académica
         if (cargaAcademica) {
-          // Aquí podrías usar un hook específico para seguimientos si existe
-          // Por ahora, usamos la lógica existente
-          const response = await fetch(
-            `${
-              import.meta.env.VITE_API_BASE_URL
-            }/programacion-seguimiento-curso?cargaAcademicaId=${
-              cargaAcademica.id
-            }`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          if (seguimientos.length > 0) {
+            const seguimiento = seguimientos[0];
+            setSeguimientoId(seguimiento.id);
 
-          if (response.ok) {
-            const seguimientos = await response.json();
-            if (seguimientos.length > 0) {
-              setSeguimientoId(seguimientos[0].id);
-              openDetalle();
+            // Buscar si ya existe un detalle para este tema
+            const detalleDelTema = seguimiento.detalles?.find(
+              (detalle: any) => detalle.tema === tema.nombre
+            );
+
+            if (detalleDelTema) {
+              // Si existe el detalle, pasarlo para edición
+              setDetalleExistente(detalleDelTema);
+              console.log("📝 Editando detalle existente:", detalleDelTema);
             } else {
-              showAlert(
-                "No hay seguimientos creados para esta carga académica. Contacte al coordinador."
-              );
+              // Si no existe, limpiar para crear nuevo
+              setDetalleExistente(null);
+              console.log("📤 Creando nuevo detalle para tema:", tema.nombre);
             }
+
+            openDetalle();
           } else {
-            showAlert("Error al verificar seguimientos");
+            showAlert(
+              "No hay seguimientos creados para esta carga académica. Contacte al coordinador."
+            );
           }
         } else {
           showAlert("No se encontró carga académica para esta asignatura");
@@ -119,21 +148,57 @@ export default function AsignaturaPage() {
 
   const handleSeguimientoCreated = () => {
     showAlert("Seguimiento creado correctamente");
+
+    // Refrescar los datos para que se refleje el nuevo seguimiento
+    try {
+      refreshSeguimientos();
+    } catch (error) {
+      console.error("Error al refrescar los datos:", error);
+      // Mostrar alerta pero no bloquear el flujo
+      showAlert(
+        "Seguimiento creado correctamente, pero hubo un problema al actualizar la vista"
+      );
+    }
+
     closeCrear();
   };
 
   const handleDetalleCreated = () => {
-    showAlert("Detalle agregado correctamente");
+    if (detalleExistente) {
+      showAlert("Detalle guardado correctamente");
+    } else {
+      showAlert("Detalle agregado correctamente");
+    }
+
+    // Refrescar los datos para que se reflejen los cambios sin recargar la página
+    try {
+      refreshSeguimientos();
+    } catch (error) {
+      console.error("Error al refrescar los datos:", error);
+      // Mostrar alerta pero no bloquear el flujo
+      showAlert(
+        "Detalle procesado correctamente, pero hubo un problema al actualizar la vista"
+      );
+    }
+
     closeDetalle();
   };
 
   // Estados de carga combinados
-  const isLoading = isLoadingAsignatura || isLoadingTemas || isLoadingCarga;
-  const error = errorAsignatura || errorTemas || errorCarga;
+  const isLoading =
+    isLoadingAsignatura ||
+    isLoadingTemas ||
+    isLoadingCarga ||
+    isLoadingSeguimientos;
+  const error =
+    errorAsignatura || errorTemas || errorCarga || errorSeguimientos;
 
   if (isLoading) {
     return (
-      <DashboardLayout title={`Asignatura ${asignatura?.nombre || ""}`}>
+      <DashboardLayout
+        title={`Asignatura ${asignatura?.nombre || ""}`}
+        needsSaludo={false}
+      >
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 animate-spin border-utn-primary"></div>
@@ -198,7 +263,7 @@ export default function AsignaturaPage() {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout needsSaludo={false}>
       {/* Header con navegación */}
       <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="flex justify-between items-center mb-4">
@@ -295,6 +360,7 @@ export default function AsignaturaPage() {
           onClose={closeDetalle}
           tema={selectedTema}
           seguimientoId={seguimientoId}
+          detalleExistenteProp={detalleExistente}
           onDetalleCreated={handleDetalleCreated}
         />
       )}

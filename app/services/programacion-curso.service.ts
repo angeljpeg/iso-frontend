@@ -123,17 +123,16 @@ export const getSeguimientosByCargaAcademica = async (
 ): Promise<GetSeguimientosByCargaAcademicaResponse> => {
   try {
     const { token, cargaAcademicaId } = request;
+    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/cargaAcademica/${cargaAcademicaId}`;
+    console.log("FETCH_URL: ", FETCH_URL);
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/carga-academica/${cargaAcademicaId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(FETCH_URL, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -429,8 +428,14 @@ export const createSeguimientoDetalle = async (
   try {
     const { token, data } = request;
 
+    console.log(
+      "🔍 createSeguimientoDetalle - URL:",
+      `${PROGRAMACION_CURSO_URL}/${data.seguimientoCursoId}/detalles`
+    );
+    console.log("🔍 createSeguimientoDetalle - Body data:", data);
+
     const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/detalles`,
+      `${PROGRAMACION_CURSO_URL}/${data.seguimientoCursoId}/detalles`,
       {
         method: "POST",
         headers: {
@@ -442,12 +447,17 @@ export const createSeguimientoDetalle = async (
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error response:", response.status, response.statusText);
+      console.error("❌ Error body:", errorText);
       throw new Error(
         `Error creating detalle: ${response.status} ${response.statusText}`
       );
     }
 
-    return (await response.json()) as CreateSeguimientoDetalleResponse;
+    const result = await response.json();
+    console.log("✅ createSeguimientoDetalle - Respuesta exitosa:", result);
+    return result as CreateSeguimientoDetalleResponse;
   } catch (error) {
     console.error("Error creating detalle:", error);
     throw error instanceof Error ? error : new Error(String(error));
@@ -459,10 +469,10 @@ export const updateSeguimientoDetalle = async (
   request: UpdateSeguimientoDetalleRequest
 ): Promise<UpdateSeguimientoDetalleResponse> => {
   try {
-    const { token, id, data } = request;
+    const { token, seguimientoId, detalleId, data } = request;
 
     const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/detalles/${id}`,
+      `${PROGRAMACION_CURSO_URL}/${seguimientoId}/detalles/${detalleId}`,
       {
         method: "PATCH",
         headers: {
