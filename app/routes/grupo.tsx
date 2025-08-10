@@ -4,9 +4,9 @@ import { useAuthStore } from "../store/auth";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { useGrupo } from "../hooks/useGrupo";
 import { Button } from "../components/ui/Button";
-import { useAsignaturaByNombre } from "../hooks/useAsignaturaByNombre";
+import { useAsignatura } from "../hooks/asignaturas/useAsignatura";
 import { Card } from "../components/ui/Card";
-import { getAllCargaAcademica } from "../services/coordinadores/carga-academica.service";
+import { getAllCargaAcademica } from "../services/carga-academica.service";
 import type { CargaAcademica } from "../types/carga-academica";
 
 // Componente para mostrar una card de asignatura con datos del backend
@@ -17,8 +17,7 @@ function AsignaturaCardWithData({
   nombreAsignatura: string;
   carrera?: string;
 }) {
-  const { asignatura, isLoading, error } =
-    useAsignaturaByNombre(nombreAsignatura);
+  const { asignatura, isLoading, error } = useAsignatura(nombreAsignatura);
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -47,7 +46,7 @@ function AsignaturaCardWithData({
   }
 
   const handleClick = () => {
-    const encodedName = encodeURIComponent(asignatura);
+    const encodedName = encodeURIComponent(asignatura.nombre);
     navigate(`/asignatura/${encodedName}`);
   };
 

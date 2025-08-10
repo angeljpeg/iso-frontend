@@ -1,31 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { asignaturasService } from "../services/asignaturas";
-import type { Asignatura } from "../types/asignaturas";
+import { getOneAsignatura } from "~/services/asignaturas.service";
+import { useAuthStore } from "~/store/auth";
+import type { Asignatura } from "~/types/asignaturas";
 
-export function useAsignaturaByNombre(nombre: string | undefined) {
+export function useAsignatura(nombre: string) {
   const navigate = useNavigate();
+  const { accessToken } = useAuthStore();
   const [asignatura, setAsignatura] = useState<Asignatura | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAsignatura = async () => {
-    if (!nombre) {
-      setIsLoading(false);
+  const fetchAsignatura = useCallback(async () => {
+    if (!nombre || !accessToken) {
+      if (!accessToken) {
+        setError("No hay token de autenticación");
+        navigate("/login");
+      }
       return;
     }
 
     try {
       setIsLoading(true);
       setError(null);
-      const data = await asignaturasService.getAsignaturaByNombre(nombre);
-      setAsignatura(data);
+
+      const response = await getOneAsignatura({
+        token: accessToken,
+        nombre,
+      });
+
+      setAsignatura(response.asignatura);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar la asignatura";
       setError(errorMessage);
 
-      // Si es un error de sesión expirada, redirigir al login
       if (
         errorMessage.includes("Sesión expirada") ||
         errorMessage.includes("No hay token")
@@ -35,11 +44,11 @@ export function useAsignaturaByNombre(nombre: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [nombre, accessToken, navigate]);
 
   useEffect(() => {
     fetchAsignatura();
-  }, [nombre]);
+  }, [fetchAsignatura]);
 
   return {
     asignatura,

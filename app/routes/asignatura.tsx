@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { useAsignatura } from "../hooks/useAsignatura";
+import {
+  useAsignaturaCompleta,
+  useTemasAsignatura,
+} from "../hooks/asignaturas";
+import { useCargaAcademica } from "../hooks/useCargaAcademica";
 import { TemaCard } from "../components/TemaCard";
 import { Button } from "../components/ui/Button";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-import { ProtectedRoute } from "../components/ProtectedRoute";
 import { useModal } from "../hooks/use-modal";
 import { useModalContext } from "../contexts/modal-context";
 import { useAuthStore } from "../store/auth";
 import type { Tema } from "../types/temas";
-import { getAuthHeaders, handleAuthErrorWithStatus } from "~/utils/auth";
-import { API_BASE_URL } from "~/services/api-config";
 import { CrearSeguimientoModal } from "~/components/ui/modals/crear-seguimiento-modal";
 import { AgregarDetalleModal } from "~/components/ui/modals/agregar-detalle-modal";
 
@@ -18,9 +19,29 @@ export default function AsignaturaPage() {
   const { asignaturaId } = useParams<{ asignaturaId: string }>();
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
-  const { asignatura, cargaAcademica, isLoading, error } = useAsignatura(
-    asignaturaId!
-  );
+
+  // Hooks para obtener datos
+  const {
+    asignatura,
+    isLoading: isLoadingAsignatura,
+    error: errorAsignatura,
+  } = useAsignaturaCompleta(asignaturaId!);
+  const {
+    temas,
+    isLoading: isLoadingTemas,
+    error: errorTemas,
+  } = useTemasAsignatura(asignaturaId!);
+
+  // Hook para obtener carga académica relacionada con esta asignatura
+  const {
+    cargasAcademicas,
+    isLoading: isLoadingCarga,
+    error: errorCarga,
+  } = useCargaAcademica({
+    asignatura: asignaturaId,
+    actual: true,
+    activo: true,
+  });
 
   // Modal hooks
   const {
@@ -34,6 +55,7 @@ export default function AsignaturaPage() {
     closeModal: closeDetalle,
   } = useModal();
   const { showAlert } = useModalContext();
+
   const [selectedTema, setSelectedTema] = useState<Tema | null>(null);
   const [seguimientoId, setSeguimientoId] = useState<string>("");
 
@@ -42,8 +64,11 @@ export default function AsignaturaPage() {
     usuario?.rol === "profesor_tiempo_completo" ||
     usuario?.rol === "profesor_asignatura";
 
+  // Obtener la primera carga académica (asumiendo que solo hay una por asignatura)
+  const cargaAcademica = cargasAcademicas[0];
+
   const handleTemaClick = async (tema: Tema) => {
-    if (!usuario || !cargaAcademica) return;
+    if (!usuario) return;
 
     setSelectedTema(tema);
 
@@ -51,25 +76,39 @@ export default function AsignaturaPage() {
       openCrear();
     } else if (isProfesor) {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/programacion-seguimiento-curso?cargaAcademicaId=${cargaAcademica.id}`,
-          {
-            headers: getAuthHeaders(),
-          }
-        );
+        // Verificar si ya existe un seguimiento para esta carga académica
+        if (cargaAcademica) {
+          // Aquí podrías usar un hook específico para seguimientos si existe
+          // Por ahora, usamos la lógica existente
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_API_BASE_URL
+            }/programacion-seguimiento-curso?cargaAcademicaId=${
+              cargaAcademica.id
+            }`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-        if (response.ok) {
-          const seguimientos = await response.json();
-          if (seguimientos.length > 0) {
-            setSeguimientoId(seguimientos[0].id);
-            openDetalle();
+          if (response.ok) {
+            const seguimientos = await response.json();
+            if (seguimientos.length > 0) {
+              setSeguimientoId(seguimientos[0].id);
+              openDetalle();
+            } else {
+              showAlert(
+                "No hay seguimientos creados para esta carga académica. Contacte al coordinador."
+              );
+            }
           } else {
-            showAlert(
-              "No hay seguimientos creados para esta carga académica. Contacte al coordinador."
-            );
+            showAlert("Error al verificar seguimientos");
           }
         } else {
-          handleAuthErrorWithStatus(response.status);
+          showAlert("No se encontró carga académica para esta asignatura");
         }
       } catch (error) {
         console.error("Error al verificar seguimientos:", error);
@@ -87,6 +126,10 @@ export default function AsignaturaPage() {
     showAlert("Detalle agregado correctamente");
     closeDetalle();
   };
+
+  // Estados de carga combinados
+  const isLoading = isLoadingAsignatura || isLoadingTemas || isLoadingCarga;
+  const error = errorAsignatura || errorTemas || errorCarga;
 
   if (isLoading) {
     return (
@@ -163,14 +206,16 @@ export default function AsignaturaPage() {
             <h1 className="text-3xl font-bold text-gray-900">
               📚 {asignatura?.nombre}
             </h1>
-            <p className="mt-2 text-utn-secondary">
-              🎓 {cargaAcademica?.carrera}
-            </p>
             {cargaAcademica && (
-              <p className="mt-1 text-sm text-gray-500">
-                Grupo: {cargaAcademica.grupo.nombreGenerado} | Cuatrimestre:{" "}
-                {cargaAcademica.grupo.cuatrimestreRelacion.nombreGenerado}
-              </p>
+              <>
+                <p className="mt-2 text-utn-secondary">
+                  🎓 {cargaAcademica.carrera}
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Grupo: {cargaAcademica.grupo.nombreGenerado} | Cuatrimestre:{" "}
+                  {cargaAcademica.grupo.cuatrimestreRelacion.nombreGenerado}
+                </p>
+              </>
             )}
           </div>
           <Button
@@ -207,9 +252,9 @@ export default function AsignaturaPage() {
           </p>
         </div>
 
-        {asignatura?.temas && asignatura.temas.length > 0 ? (
+        {temas && temas.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {asignatura.temas.map((tema: Tema, index: number) => (
+            {temas.map((tema: Tema, index: number) => (
               <div
                 key={`${tema.nombre}-${tema.unidad}-${index}`}
                 className="flex flex-col justify-between p-4 h-full bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow duration-200 hover:shadow-md"
