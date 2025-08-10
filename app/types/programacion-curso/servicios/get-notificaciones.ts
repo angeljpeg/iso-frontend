@@ -1,6 +1,7 @@
 import type { NotificacionSeguimiento } from "../index";
 
 export interface GetNotificacionesRequest {
+  token: string;
   usuarioId?: string;
   seguimientoCursoId?: string;
   tipo?: string;

@@ -1,6 +1,7 @@
 import type { EstadoSeguimiento } from "../index";
 
 export interface UpdateSeguimientoEstadoRequest {
+  token: string;
   id: string;
   estado: EstadoSeguimiento;
   fechaRevision?: string;

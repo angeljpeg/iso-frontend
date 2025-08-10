@@ -8,7 +8,8 @@ export interface GetSeguimientosCursoResponse {
   totalPages: number;
 }
 
-export interface GetSeguimientosCursoParams {
+export interface GetSeguimientosCursoRequest {
+  token: string;
   page?: number;
   limit?: number;
   estado?: string;

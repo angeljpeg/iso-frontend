@@ -1,6 +1,7 @@
 import type { SeguimientoCurso } from "../index";
 
 export interface GetSeguimientosByCuatrimestreRequest {
+  token: string;
   cuatrimestreId: string;
   page?: number;
   limit?: number;

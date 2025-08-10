@@ -1,6 +1,7 @@
 import type { SeguimientoCurso } from "../index";
 
 export interface GetSeguimientosByCargaAcademicaRequest {
+  token: string;
   cargaAcademicaId: string;
 }
 

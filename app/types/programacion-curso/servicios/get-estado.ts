@@ -1,6 +1,7 @@
 import type { EstadoSeguimiento } from "../index";
 
 export interface GetSeguimientoEstadoRequest {
+  token: string;
   id: string;
 }
 

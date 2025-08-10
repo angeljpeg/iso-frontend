@@ -1,4 +1,5 @@
 export interface MarcarNotificacionLeidaRequest {
+  token: string;
   id: string;
 }
 

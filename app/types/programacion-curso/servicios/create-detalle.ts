@@ -1,6 +1,7 @@
 import type { CreateSeguimientoDetalleDto, SeguimientoDetalle } from "../index";
 
 export interface CreateSeguimientoDetalleRequest {
+  token: string;
   data: CreateSeguimientoDetalleDto;
 }
 

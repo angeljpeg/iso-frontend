@@ -1,6 +1,7 @@
 import type { SeguimientoCurso } from "../index";
 
 export interface GetSeguimientosByProfesorRequest {
+  token: string;
   profesorId: string;
   page?: number;
   limit?: number;

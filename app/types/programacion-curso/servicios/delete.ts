@@ -1,4 +1,5 @@
 export interface DeleteSeguimientoCursoRequest {
+  token: string;
   id: string;
 }
 
