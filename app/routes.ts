@@ -9,8 +9,10 @@ export default [
   route("estadias", "routes/estadias.tsx"),
   route("seguimiento", "routes/seguimiento.tsx"),
   route("seguimientos", "routes/seguimientos.tsx"),
-  route("grupo/:grupoId", "routes/grupo.tsx"),
+
+  // PROFESOR
   route("asignatura/:asignaturaId", "routes/asignatura.tsx"),
+  route("grupo/:grupoId", "routes/grupo.tsx"),
 
   // COORDINADOR
   route(

@@ -12,7 +12,7 @@ import {
   HashIcon,
   ChevronRightIcon,
 } from "lucide-react";
-import type { Tema } from "../types/carga-academica";
+import type { Tema } from "../types/temas";
 
 interface TemaCardProps {
   tema: Tema;

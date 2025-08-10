@@ -1,7 +1,7 @@
-import React from 'react';
-import { useEstadias } from '../hooks/useEstadias';
-import { Card, Button } from '../components/ui';
-import { Badge } from '../components/ui/badge';
+import React from "react";
+import { useEstadias } from "../hooks/useEstadias";
+import { Card, Button } from "../components/ui";
+import { Badge } from "../components/ui/badge";
 
 export default function EstadiasPage() {
   const { estadias, loading, error } = useEstadias();
@@ -25,10 +25,10 @@ export default function EstadiasPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Control de Estadías</h1>
-        <Button variant="default">
-          Nueva Estadía
-        </Button>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Control de Estadías
+        </h1>
+        <Button variant="default">Nueva Estadía</Button>
       </div>
 
       {estadias.length === 0 ? (
@@ -37,11 +37,10 @@ export default function EstadiasPage() {
             No hay estadías registradas
           </h3>
           <p className="text-gray-600 mb-4">
-            Comienza creando una nueva estadía para llevar el control de tus alumnos.
+            Comienza creando una nueva estadía para llevar el control de tus
+            alumnos.
           </p>
-          <Button variant="default">
-            Crear Primera Estadía
-          </Button>
+          <Button variant="default">Crear Primera Estadía</Button>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -50,7 +49,7 @@ export default function EstadiasPage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {estadia.nombreProfesor}
+                    {estadia.profesor.nombre}
                   </h3>
                   <p className="text-sm text-gray-600">
                     Período: {estadia.periodo}

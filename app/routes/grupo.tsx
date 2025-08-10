@@ -137,133 +137,130 @@ export default function GrupoPage() {
   const error = grupoError || cargasError;
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout title={`Grupo ${grupo?.nombreGenerado || ""}`}>
-        <div className="space-y-8">
-          {/* Header con información del grupo */}
-          <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="mb-2 text-2xl font-bold text-gray-900">
-                  🏷️ {grupo?.nombreGenerado}
-                </h1>
-                <p className="text-gray-600">
-                  Información del grupo y sus asignaturas
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleBackToDashboard}
-                className="flex items-center space-x-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-                <span>Volver al Dashboard</span>
-              </Button>
-            </div>
-
-            {grupo && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="mb-1 font-semibold text-gray-900">Carrera</h3>
-                  <p className="text-gray-700">{grupo.carrera}</p>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="mb-1 font-semibold text-gray-900">
-                    Cuatrimestre
-                  </h3>
-                  <p className="text-gray-700">
-                    {grupo.cuatrimestreRelacion?.nombreGenerado}
-                  </p>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="mb-1 font-semibold text-gray-900">
-                    Número de Grupo
-                  </h3>
-                  <p className="text-gray-700">{grupo.numeroGrupo}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sección de Asignaturas */}
-          <div className="space-y-6">
-            <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <h2 className="mb-2 text-xl font-bold text-gray-900">
-                Mis Asignaturas en este Grupo
-              </h2>
+    <DashboardLayout title={`Grupo ${grupo?.nombreGenerado || ""}`}>
+      <div className="space-y-8">
+        {/* Header con información del grupo */}
+        <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+                🏷️ {grupo?.nombreGenerado}
+              </h1>
               <p className="text-gray-600">
-                Selecciona una asignatura para ver sus temas
+                Información del grupo y sus asignaturas
               </p>
             </div>
-
-            {isLoading && (
-              <div className="flex justify-center items-center h-64">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 animate-spin border-utn-primary"></div>
-                  <p className="text-gray-600">Cargando asignaturas...</p>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                <p className="text-red-700">{error}</p>
-              </div>
-            )}
-
-            {!isLoading && !error && (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {cargasDelGrupo.length === 0 ? (
-                  <div className="col-span-full py-12 text-center">
-                    <div className="p-8 bg-gray-50 rounded-lg">
-                      <svg
-                        className="mx-auto mb-4 w-16 h-16 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                        />
-                      </svg>
-                      <h4 className="mb-2 text-lg font-semibold text-gray-900">
-                        No tienes asignaturas asignadas en este grupo
-                      </h4>
-                      <p className="text-gray-500">
-                        No tienes asignaturas asignadas en este grupo
-                        específico.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  cargasDelGrupo.map((carga) => (
-                    <AsignaturaCardWithData
-                      key={carga.id}
-                      nombreAsignatura={carga.asignatura}
-                      carrera={carga.carrera}
-                    />
-                  ))
-                )}
-              </div>
-            )}
+            <Button
+              variant="outline"
+              onClick={handleBackToDashboard}
+              className="flex items-center space-x-2"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              <span>Volver al Dashboard</span>
+            </Button>
           </div>
+
+          {grupo && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="mb-1 font-semibold text-gray-900">Carrera</h3>
+                <p className="text-gray-700">{grupo.carrera}</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="mb-1 font-semibold text-gray-900">
+                  Cuatrimestre
+                </h3>
+                <p className="text-gray-700">
+                  {grupo.cuatrimestreRelacion?.nombreGenerado}
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="mb-1 font-semibold text-gray-900">
+                  Número de Grupo
+                </h3>
+                <p className="text-gray-700">{grupo.numeroGrupo}</p>
+              </div>
+            </div>
+          )}
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+
+        {/* Sección de Asignaturas */}
+        <div className="space-y-6">
+          <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h2 className="mb-2 text-xl font-bold text-gray-900">
+              Mis Asignaturas en este Grupo
+            </h2>
+            <p className="text-gray-600">
+              Selecciona una asignatura para ver sus temas
+            </p>
+          </div>
+
+          {isLoading && (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-center">
+                <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 animate-spin border-utn-primary"></div>
+                <p className="text-gray-600">Cargando asignaturas...</p>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+              <p className="text-red-700">{error}</p>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {cargasDelGrupo.length === 0 ? (
+                <div className="col-span-full py-12 text-center">
+                  <div className="p-8 bg-gray-50 rounded-lg">
+                    <svg
+                      className="mx-auto mb-4 w-16 h-16 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <h4 className="mb-2 text-lg font-semibold text-gray-900">
+                      No tienes asignaturas asignadas en este grupo
+                    </h4>
+                    <p className="text-gray-500">
+                      No tienes asignaturas asignadas en este grupo específico.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                cargasDelGrupo.map((carga) => (
+                  <AsignaturaCardWithData
+                    key={carga.id}
+                    nombreAsignatura={carga.asignatura}
+                    carrera={carga.carrera}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }

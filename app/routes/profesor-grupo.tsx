@@ -19,7 +19,7 @@ export default function ProfesorGrupoPage() {
   );
 
   // Obtener la primera asignatura para cargar los temas (asumiendo que un grupo tiene una asignatura)
-  const asignaturaId = cargasDelGrupo[0]?.asignatura.id;
+  const asignaturaId = cargasDelGrupo[0]?.asignatura;
   const {
     temas,
     isLoading: isLoadingTemas,
@@ -135,7 +135,7 @@ export default function ProfesorGrupoPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       📚 Asignatura
                     </h3>
-                    <p className="text-gray-700">{asignatura?.nombre}</p>
+                    <p className="text-gray-700">{asignatura}</p>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -152,7 +152,7 @@ export default function ProfesorGrupoPage() {
               <div>
                 <div className="mb-4">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Temas de {asignatura?.nombre}
+                    Temas de {asignatura}
                   </h2>
                   <p className="text-gray-600">
                     Selecciona un tema para ver su seguimiento
