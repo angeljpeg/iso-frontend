@@ -16,17 +16,17 @@ export const ConfiguracionRapida = () => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="p-4 rounded-lg border border-gray-200">
           <h4 className="mb-2 font-medium text-gray-900">
-            Gestión de Usuarios
+            Asignación de Asesorias
           </h4>
           <p className="mb-3 text-sm text-gray-600">
-            Administra profesores, directores y coordinadores
+            Asigna profesores a alumnos
           </p>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onClick("/coordinador/gestion-usuarios")}
+            onClick={() => onClick("/coordinador/asignacion-asesorias")}
           >
-            Gestionar usuarios →
+            Asignar asesorias →
           </Button>
         </div>
 
@@ -75,6 +75,52 @@ export const ConfiguracionRapida = () => {
             onClick={() => onClick("/coordinador/asignacion-tutorias")}
           >
             Asignar tutorias →
+          </Button>
+        </div>
+
+        <div className="p-4 rounded-lg border border-gray-200">
+          <h4 className="mb-2 font-medium text-gray-900">
+            Gestión de Usuarios
+          </h4>
+          <p className="mb-3 text-sm text-gray-600">
+            Administra profesores, directores y coordinadores
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onClick("/coordinador/gestion-usuarios")}
+          >
+            Gestionar usuarios →
+          </Button>
+        </div>
+
+        <div className="p-4 rounded-lg border border-gray-200">
+          <h4 className="mb-2 font-medium text-gray-900">Gestión de Grupos</h4>
+          <p className="mb-3 text-sm text-gray-600">
+            Administra grupos y asignaturas
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onClick("/coordinador/gestion-grupos")}
+          >
+            Gestionar grupos →
+          </Button>
+        </div>
+
+        <div className="p-4 rounded-lg border border-gray-200">
+          <h4 className="mb-2 font-medium text-gray-900">
+            Gestión de Cuatrimestres
+          </h4>
+          <p className="mb-3 text-sm text-gray-600">
+            Administra cuatrimestres y periodos
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onClick("/coordinador/gestion-cuatrimestres")}
+          >
+            Gestionar cuatrimestres →
           </Button>
         </div>
       </div>

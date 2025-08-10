@@ -17,6 +17,7 @@ export default [
     "coordinador/gestion-usuarios",
     "routes/coordinador/gestion-usuarios.tsx"
   ),
+  route("coordinador/gestion-grupos", "routes/coordinador/gestion-grupos.tsx"),
   route(
     "coordinador/asignacion-cargas",
     "routes/coordinador/asignacion-cargas.tsx"
