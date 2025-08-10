@@ -24,13 +24,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <ScrollRestoration />
-      <Scripts />
-    </>
-  );
+  return <>{children}</>;
 }
 
 import { ModalProvider } from "~/contexts/modal-context";

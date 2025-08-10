@@ -260,7 +260,7 @@ export const createSeguimientoCurso = async (
   try {
     const { token, data } = request;
 
-    const response = await fetch(`${PROGRAMACION_CURSO_URL}/seguimientos`, {
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -270,12 +270,27 @@ export const createSeguimientoCurso = async (
     });
 
     if (!response.ok) {
+      // Intentar obtener más detalles del error
+      let errorDetails = "";
+      try {
+        const errorResponse = await response.text();
+        errorDetails = errorResponse;
+        console.log(
+          "createSeguimientoCurso - Detalles del error:",
+          errorResponse
+        );
+      } catch (e) {
+        errorDetails = "No se pudieron obtener detalles del error";
+      }
+
       throw new Error(
-        `Error creating seguimiento: ${response.status} ${response.statusText}`
+        `Error creating seguimiento: ${response.status} ${response.statusText} - ${errorDetails}`
       );
     }
 
-    return (await response.json()) as CreateSeguimientoCursoResponse;
+    const responseData = await response.json();
+    console.log("createSeguimientoCurso - Respuesta exitosa:", responseData);
+    return responseData as CreateSeguimientoCursoResponse;
   } catch (error) {
     console.error("Error creating seguimiento:", error);
     throw error instanceof Error ? error : new Error(String(error));

@@ -24,6 +24,7 @@ import { Button } from "~/components/ui/Button";
 import { FormSelect } from "~/components/ui/forms/FormSelect";
 import type { CreateCargaAcademicaRequest } from "~/types/carga-academica/services/create";
 import { createCargaAcademica } from "~/services/coordinadores/carga-academica.service";
+import { createSeguimientoCurso } from "~/services/programacion-curso.service";
 import { useAuthStore } from "~/store/auth";
 import { useUsuarios } from "~/hooks/useUsuarios";
 import { useGrupos } from "~/hooks/useGrupos";
@@ -58,7 +59,7 @@ export const CrearCargaAcademicaModal = ({
   onOpenChange,
   onSuccess,
 }: CrearCargaAcademicaModalProps) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken, usuario } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
   // Hooks para obtener profesores y grupos
@@ -156,6 +157,14 @@ export const CrearCargaAcademicaModal = ({
       return;
     }
 
+    if (!usuario || usuario.rol !== RolUsuarioEnum.COORDINADOR) {
+      toast.error("Solo los coordinadores pueden crear cargas académicas");
+      return;
+    }
+
+    console.log("Usuario actual:", usuario);
+    console.log("Rol del usuario:", usuario.rol);
+
     setIsLoading(true);
 
     try {
@@ -167,7 +176,28 @@ export const CrearCargaAcademicaModal = ({
         grupoId: data.grupoId,
       };
 
-      await createCargaAcademica(createRequest);
+      // Crear la carga académica
+      const cargaAcademica = await createCargaAcademica(createRequest);
+
+      try {
+        const seguimientoData = {
+          token: accessToken,
+          data: {
+            cargaAcademicaId: cargaAcademica.id,
+            // No se incluye fechaRevision como solicitado
+          },
+        };
+
+        await createSeguimientoCurso(seguimientoData);
+
+        toast.success("Carga académica y seguimiento creados exitosamente");
+      } catch (seguimientoError) {
+        // Si falla la creación del seguimiento, mostrar advertencia pero no fallar la operación
+        console.error("Error al crear seguimiento:", seguimientoError);
+        toast.error(
+          "Carga académica creada pero hubo un problema al crear el seguimiento"
+        );
+      }
 
       toast.success("Carga académica creada exitosamente");
       form.reset();

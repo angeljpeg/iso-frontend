@@ -22,11 +22,6 @@ export function DashboardLayout({
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!usuario) {
-    navigate("/login");
-    return null;
-  }
-
   const handleLogout = () => {
     logout();
     navigate("/login");
