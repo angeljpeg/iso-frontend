@@ -162,9 +162,6 @@ export const CrearCargaAcademicaModal = ({
       return;
     }
 
-    console.log("Usuario actual:", usuario);
-    console.log("Rol del usuario:", usuario.rol);
-
     setIsLoading(true);
 
     try {
@@ -184,6 +181,7 @@ export const CrearCargaAcademicaModal = ({
           token: accessToken,
           data: {
             cargaAcademicaId: cargaAcademica.id,
+            cuatrimestreId: cargaAcademica.cuatrimestreId,
             // No se incluye fechaRevision como solicitado
           },
         };
@@ -199,7 +197,6 @@ export const CrearCargaAcademicaModal = ({
         );
       }
 
-      toast.success("Carga académica creada exitosamente");
       form.reset();
       onOpenChange(false);
       onSuccess?.();

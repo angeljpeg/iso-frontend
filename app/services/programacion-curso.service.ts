@@ -275,10 +275,6 @@ export const createSeguimientoCurso = async (
       try {
         const errorResponse = await response.text();
         errorDetails = errorResponse;
-        console.log(
-          "createSeguimientoCurso - Detalles del error:",
-          errorResponse
-        );
       } catch (e) {
         errorDetails = "No se pudieron obtener detalles del error";
       }
@@ -289,7 +285,6 @@ export const createSeguimientoCurso = async (
     }
 
     const responseData = await response.json();
-    console.log("createSeguimientoCurso - Respuesta exitosa:", responseData);
     return responseData as CreateSeguimientoCursoResponse;
   } catch (error) {
     console.error("Error creating seguimiento:", error);

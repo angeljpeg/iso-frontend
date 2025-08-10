@@ -15,9 +15,7 @@ import type {
 } from "~/types/carga-academica/services";
 import { API_BASE_URL } from "./api-config";
 
-console.log("API_BASE_URL importado:", API_BASE_URL);
 const CARGA_ACADEMICA_URL = `${API_BASE_URL}/carga-academica`;
-console.log("CARGA_ACADEMICA_URL construida:", CARGA_ACADEMICA_URL);
 
 // Obtener todas las asignaciones de carga académica
 export const getAllCargaAcademica = async (
@@ -70,13 +68,7 @@ export const createCargaAcademica = async (
   try {
     const { token, ...cargaData } = request;
 
-    console.log("URL de la petición:", CARGA_ACADEMICA_URL);
-    console.log("URL completa:", `${API_BASE_URL}/carga-academica`);
-    console.log("Datos a enviar:", cargaData);
-    console.log("Token:", token);
-
     const requestBody = JSON.stringify(cargaData);
-    console.log("Body de la petición:", requestBody);
 
     const response = await fetch(CARGA_ACADEMICA_URL, {
       method: "POST",
@@ -87,11 +79,7 @@ export const createCargaAcademica = async (
       body: requestBody,
     });
 
-    console.log("Status de la respuesta:", response.status);
-    console.log(
-      "Headers de la respuesta:",
-      Object.fromEntries(response.headers.entries())
-    );
+    // Debug logging removed for production
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -103,7 +91,7 @@ export const createCargaAcademica = async (
       try {
         const errorResponse = await response.text();
         errorDetails = errorResponse;
-        console.log("Detalles del error:", errorResponse);
+        // Debug logging removed for production
       } catch (e) {
         errorDetails = "No se pudieron obtener detalles del error";
       }

@@ -89,6 +89,7 @@ export interface NotificacionSeguimiento {
 // Tipos para formularios y creación
 export interface CreateSeguimientoCursoDto {
   cargaAcademicaId: string;
+  cuatrimestreId: string;
   fechaRevision?: string;
 }
 
