@@ -7,6 +7,7 @@ import type { Estadia } from "~/types/estadias";
 interface UseEstadiasOptions {
   profesorId?: string;
   periodo?: string;
+  carrera?: string;
   onlyMyEstadias?: boolean;
 }
 
@@ -17,7 +18,7 @@ export function useEstadias(options: UseEstadiasOptions = {}) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { profesorId, periodo, onlyMyEstadias = false } = options;
+  const { profesorId, periodo, carrera, onlyMyEstadias = false } = options;
 
   const handleError = useCallback(
     (err: unknown) => {
@@ -76,9 +77,17 @@ export function useEstadias(options: UseEstadiasOptions = {}) {
     return estadias.filter((estadia) => {
       if (profesorId && estadia.profesor?.id !== profesorId) return false;
       if (periodo && estadia.periodo !== periodo) return false;
+      if (carrera) {
+        // Filtrar por carrera basándose en los alumnos de la estadía
+        const tieneAlumnosConCarrera = estadia.alumnos?.some(
+          (alumno) => alumno.carrera === carrera
+        );
+        // Si no hay alumnos o ningún alumno tiene la carrera seleccionada, filtrar la estadía
+        if (!tieneAlumnosConCarrera) return false;
+      }
       return true;
     });
-  }, [estadias, profesorId, periodo]);
+  }, [estadias, profesorId, periodo, carrera]);
 
   return {
     estadias: filteredEstadias,

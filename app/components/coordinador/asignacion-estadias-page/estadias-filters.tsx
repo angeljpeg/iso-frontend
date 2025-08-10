@@ -3,15 +3,21 @@ import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 import { FormSelect } from "~/components/ui/forms/FormSelect";
 import { useUsuarios } from "~/hooks/useUsuarios";
-import { Search, X, User, Calendar } from "lucide-react";
+import { useCarreras } from "~/hooks/useCarreras";
+import { Search, X, User, Calendar, GraduationCap } from "lucide-react";
 import type { Usuario } from "~/types/usuarios";
 
 interface EstadiasFiltersProps {
-  onFilterChange: (filters: { profesorId?: string; periodo?: string }) => void;
+  onFilterChange: (filters: {
+    profesorId?: string;
+    periodo?: string;
+    carrera?: string;
+  }) => void;
   onClearFilters: () => void;
   currentFilters: {
     profesorId?: string;
     periodo?: string;
+    carrera?: string;
   };
 }
 
@@ -27,12 +33,36 @@ export function EstadiasFilters({
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>(
     currentFilters.periodo || ""
   );
+  const [selectedCarrera, setSelectedCarrera] = useState<string>(
+    currentFilters.carrera || ""
+  );
 
   const { usuarios: profesores, updateFilters: updateProfesoresFilters } =
     useUsuarios({
       search: profesorSearch,
       limit: 50,
     });
+
+  const { carreras, isLoading: carrerasLoading } = useCarreras();
+
+  // Debug: verificar que el componente se esté renderizando
+  console.log(
+    "EstadiasFilters render - carreras:",
+    carreras?.length || 0,
+    "loading:",
+    carrerasLoading
+  );
+  console.log("Carreras data:", carreras);
+  console.log("Carreras loading state:", carrerasLoading);
+
+  // Estado temporal para debug
+  const [carrerasTemp] = useState([
+    {
+      codigo: "TIDS",
+      nombre: "Tecnologías de la Información y Desarrollo de Software",
+    },
+    { codigo: "TEST", nombre: "Carrera de Prueba" },
+  ]);
 
   // Filtrar solo profesores
   const profesoresFiltrados = profesores.filter(
@@ -52,6 +82,24 @@ export function EstadiasFilters({
     { value: "2025-3", label: "2025-3" },
   ];
 
+  // Opciones para carreras
+  const carreraOptions = [
+    { value: "", label: "Todas las carreras" },
+    ...(carreras || []).map((carrera) => ({
+      value: carrera.codigo,
+      label: carrera.nombre,
+    })),
+  ];
+
+  // Fallback temporal para debug
+  if (!carreras || carreras.length === 0) {
+    console.log("No hay carreras cargadas, usando fallback");
+    carreraOptions.push(
+      { value: "test1", label: "Carrera de Prueba 1" },
+      { value: "test2", label: "Carrera de Prueba 2" }
+    );
+  }
+
   // Actualizar búsqueda de profesores
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -66,8 +114,9 @@ export function EstadiasFilters({
     onFilterChange({
       profesorId: selectedProfesor?.id || "",
       periodo: selectedPeriodo,
+      carrera: selectedCarrera,
     });
-  }, [selectedProfesor, selectedPeriodo, onFilterChange]);
+  }, [selectedProfesor, selectedPeriodo, selectedCarrera, onFilterChange]);
 
   useEffect(() => {
     applyFilters();
@@ -87,10 +136,12 @@ export function EstadiasFilters({
     setSelectedProfesor(null);
     setProfesorSearch("");
     setSelectedPeriodo("");
+    setSelectedCarrera("");
     onClearFilters();
   };
 
-  const hasActiveFilters = selectedProfesor || selectedPeriodo;
+  const hasActiveFilters =
+    selectedProfesor || selectedPeriodo || selectedCarrera;
 
   return (
     <div className="p-4 space-y-4 bg-white rounded-lg border">
@@ -99,7 +150,7 @@ export function EstadiasFilters({
         Filtros de Búsqueda
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Filtro por Profesor */}
         <div className="space-y-2">
           <label className="flex gap-2 items-center text-sm font-medium text-gray-700">
@@ -146,6 +197,43 @@ export function EstadiasFilters({
             )}
         </div>
 
+        {/* Filtro por Carrera */}
+        <div className="space-y-2">
+          <label className="flex gap-2 items-center text-sm font-medium text-gray-700">
+            <GraduationCap className="w-4 h-4" />
+            Carrera
+            {carrerasLoading && (
+              <span className="text-xs text-gray-500">(Cargando...)</span>
+            )}
+          </label>
+
+          {/* Select temporal para debug */}
+          <select
+            value={selectedCarrera}
+            onChange={(e) => setSelectedCarrera(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            disabled={carrerasLoading}
+          >
+            <option value="">Seleccionar carrera</option>
+            {carreraOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          {/* FormSelect original comentado temporalmente */}
+          {/*
+          <FormSelect
+            options={carreraOptions}
+            value={selectedCarrera}
+            onChange={(e) => setSelectedCarrera(e.target.value)}
+            placeholder="Seleccionar carrera"
+            disabled={carrerasLoading}
+          />
+          */}
+        </div>
+
         {/* Filtro por Período */}
         <div className="space-y-2">
           <label className="flex gap-2 items-center text-sm font-medium text-gray-700">
@@ -182,6 +270,16 @@ export function EstadiasFilters({
             <span className="inline-flex gap-1 items-center px-2 py-1 text-xs text-blue-800 bg-blue-100 rounded-full">
               Profesor: {selectedProfesor.nombre} {selectedProfesor.apellido}
               <button onClick={handleClearProfesor}>
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedCarrera && (
+            <span className="inline-flex gap-1 items-center px-2 py-1 text-xs text-purple-800 bg-purple-100 rounded-full">
+              Carrera:{" "}
+              {carreras?.find((c) => c.codigo === selectedCarrera)?.nombre ||
+                selectedCarrera}
+              <button onClick={() => setSelectedCarrera("")}>
                 <X className="w-3 h-3" />
               </button>
             </span>

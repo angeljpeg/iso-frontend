@@ -22,11 +22,19 @@ export function useCarreras() {
       setIsLoading(true);
       setError(null);
 
+      console.log(
+        "Fetching carreras with token:",
+        accessToken ? "Token exists" : "No token"
+      );
+
       const response = await getCarrerasDisponibles({
         token: accessToken,
       });
+
+      console.log("Carreras response:", response);
       setCarreras(response.data); // En lugar de response.data.data
     } catch (err) {
+      console.error("Error fetching carreras:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar carreras";
       setError(errorMessage);

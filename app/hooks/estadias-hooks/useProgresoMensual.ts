@@ -58,16 +58,14 @@ export function useProgresoMensual(options: UseProgresoMensualOptions = {}) {
       const response: GetProgresoByAlumnoResponse = await getProgresoByAlumno({
         estadiaAlumnoId,
         token: accessToken,
-        page,
-        limit,
       });
 
       setProgresos(response.data);
       setPagination({
-        total: response.total,
-        page: response.page,
-        limit: response.limit,
-        totalPages: response.totalPages,
+        total: response.data.length,
+        page: page,
+        limit: limit,
+        totalPages: Math.ceil(response.data.length / limit),
       });
     } catch (err) {
       handleError(err);

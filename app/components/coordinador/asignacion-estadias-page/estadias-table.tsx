@@ -1,6 +1,13 @@
 import { useState, useCallback } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Edit, Trash2, ArrowUpDown, Plus } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  ArrowUpDown,
+  Plus,
+  Users,
+} from "lucide-react";
 import { Button } from "~/components/ui/Button";
 import { DataTable } from "~/components/ui/tables/data-table";
 import {
@@ -16,11 +23,14 @@ import { useEstadiaActions } from "~/hooks/estadias-hooks";
 import { EstadiasFilters } from "./estadias-filters";
 import { CrearEstadiaModal } from "./crear-estadia-modal";
 import { EditarEstadiaModal } from "./editar-estadia-modal";
+import { GestionarAlumnosModal } from "./gestionar-alumnos-modal";
 import type { Estadia } from "~/types/estadias";
 
 export const EstadiasTable = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isGestionarAlumnosModalOpen, setIsGestionarAlumnosModalOpen] =
+    useState(false);
   const [selectedEstadia, setSelectedEstadia] = useState<Estadia | null>(null);
   const [loadingActions, setLoadingActions] = useState<Record<string, boolean>>(
     {}
@@ -28,17 +38,24 @@ export const EstadiasTable = () => {
   const [filters, setFilters] = useState({
     profesorId: "",
     periodo: "",
+    carrera: "",
   });
 
   const { estadias, isLoading, error, refetch } = useEstadias({
     profesorId: filters.profesorId || undefined,
     periodo: filters.periodo || undefined,
+    carrera: filters.carrera || undefined,
   });
   const { remove } = useEstadiaActions();
 
   const handleEdit = (estadia: Estadia) => {
     setSelectedEstadia(estadia);
     setIsEditModalOpen(true);
+  };
+
+  const handleGestionarAlumnos = (estadia: Estadia) => {
+    setSelectedEstadia(estadia);
+    setIsGestionarAlumnosModalOpen(true);
   };
 
   const handleDelete = async (estadiaId: string) => {
@@ -57,20 +74,26 @@ export const EstadiasTable = () => {
     }
   };
 
-  const handleFilterChange = useCallback((newFilters: {
-    profesorId?: string;
-    periodo?: string;
-  }) => {
-    setFilters({
-      profesorId: newFilters.profesorId || "",
-      periodo: newFilters.periodo || "",
-    });
-  }, []);
+  const handleFilterChange = useCallback(
+    (newFilters: {
+      profesorId?: string;
+      periodo?: string;
+      carrera?: string;
+    }) => {
+      setFilters({
+        profesorId: newFilters.profesorId || "",
+        periodo: newFilters.periodo || "",
+        carrera: newFilters.carrera || "",
+      });
+    },
+    []
+  );
 
   const handleClearFilters = useCallback(() => {
     setFilters({
       profesorId: "",
       periodo: "",
+      carrera: "",
     });
   }, []);
 
@@ -114,11 +137,21 @@ export const EstadiasTable = () => {
       accessorKey: "alumnos",
       header: "Alumnos Asignados",
       cell: ({ row }) => {
-        const alumnos = row.original.alumnos || [];
+        const estadia = row.original;
+        const alumnos = estadia.alumnos || [];
         return (
           <div className="flex gap-2 items-center">
             <span className="text-sm font-medium">{alumnos.length}</span>
             <span className="text-xs text-muted-foreground">alumnos</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleGestionarAlumnos(estadia)}
+              className="ml-2"
+            >
+              <Users className="w-4 h-4 mr-1" />
+              Gestionar
+            </Button>
           </div>
         );
       },
@@ -266,6 +299,20 @@ export const EstadiasTable = () => {
         onSuccess={() => {
           refetch();
           setIsEditModalOpen(false);
+          setSelectedEstadia(null);
+        }}
+      />
+
+      <GestionarAlumnosModal
+        isOpen={isGestionarAlumnosModalOpen}
+        onClose={() => {
+          setIsGestionarAlumnosModalOpen(false);
+          setSelectedEstadia(null);
+        }}
+        estadia={selectedEstadia}
+        onSuccess={() => {
+          refetch();
+          setIsGestionarAlumnosModalOpen(false);
           setSelectedEstadia(null);
         }}
       />
