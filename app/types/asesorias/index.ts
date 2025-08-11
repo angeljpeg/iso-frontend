@@ -1,6 +1,7 @@
 import { type CargaAcademica } from "../carga-academica";
 export * from "./services";
 export * from "./columns-table";
+export * from "./reportes";
 
 // Interfaces principales
 export interface Asesoria {

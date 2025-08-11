@@ -67,6 +67,11 @@ export function useSeguimientoCursoActions() {
 
   const updateSeguimiento = useCallback(
     async (id: string, seguimientoData: UpdateSeguimientoCursoDto) => {
+      console.log("=== DEBUG UPDATE SEGUIMIENTO ===");
+      console.log("id:", id);
+      console.log("seguimientoData:", seguimientoData);
+      console.log("accessToken:", accessToken ? "Existe" : "No existe");
+      
       if (!accessToken) {
         setError("No hay token de autenticación");
         navigate("/login");
@@ -77,14 +82,17 @@ export function useSeguimientoCursoActions() {
         setIsLoading(true);
         setError(null);
 
+        console.log("Llamando a updateSeguimientoCurso...");
         const response = await updateSeguimientoCurso({
           token: accessToken,
           id,
-          ...seguimientoData,
+          data: seguimientoData,
         });
 
+        console.log("Respuesta del servicio:", response);
         return response.data;
       } catch (err) {
+        console.error("Error en updateSeguimiento:", err);
         handleError(err);
         return null;
       } finally {

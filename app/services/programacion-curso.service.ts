@@ -318,6 +318,12 @@ export const updateSeguimientoCurso = async (
 ): Promise<UpdateSeguimientoCursoResponse> => {
   try {
     const { token, id, data } = request;
+    
+    console.log("=== DEBUG SERVICE UPDATE ===");
+    console.log("URL:", `${PROGRAMACION_CURSO_URL}/${id}`);
+    console.log("Method: PATCH");
+    console.log("Data:", data);
+    console.log("Token:", token ? "Existe" : "No existe");
 
     const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}`, {
       method: "PATCH",
@@ -328,13 +334,20 @@ export const updateSeguimientoCurso = async (
       body: JSON.stringify(data),
     });
 
+    console.log("Response status:", response.status);
+    console.log("Response statusText:", response.statusText);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response body:", errorText);
       throw new Error(
-        `Error updating seguimiento: ${response.status} ${response.statusText}`
+        `Error updating seguimiento: ${response.status} ${response.statusText} - ${errorText}`
       );
     }
 
-    return (await response.json()) as UpdateSeguimientoCursoResponse;
+    const responseData = await response.json();
+    console.log("Response data:", responseData);
+    return responseData as UpdateSeguimientoCursoResponse;
   } catch (error) {
     console.error("Error updating seguimiento:", error);
     throw error instanceof Error ? error : new Error(String(error));

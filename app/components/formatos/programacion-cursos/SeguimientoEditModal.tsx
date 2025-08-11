@@ -13,6 +13,7 @@ import {
   EstadoSeguimiento,
   EstadoAvance,
 } from "~/types/programacion-curso/index";
+import { useSeguimientoCursoActions } from "~/hooks/programacion-curso/useSeguimientoCursoActions";
 
 interface SeguimientoEditModalProps {
   seguimiento: SeguimientoCurso;
@@ -25,7 +26,8 @@ export function SeguimientoEditModal({
   onClose,
   onSuccess,
 }: SeguimientoEditModalProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const { updateSeguimiento, isLoading: isUpdating } =
+    useSeguimientoCursoActions();
   const [editData, setEditData] = useState<UpdateSeguimientoCursoDto>({
     estado: seguimiento.estado,
     fechaRevision: seguimiento.fechaRevision || undefined,
@@ -77,18 +79,49 @@ export function SeguimientoEditModal({
 
   const handleSave = async () => {
     try {
-      setIsLoading(true);
+      console.log("=== DEBUG SAVE ===");
+      console.log("seguimiento.id:", seguimiento.id);
+      console.log("editData:", editData);
+      console.log("seguimiento.estado:", seguimiento.estado);
+      console.log("seguimiento.fechaRevision:", seguimiento.fechaRevision);
+      console.log(
+        "seguimiento.fechaSeguimientoFinal:",
+        seguimiento.fechaSeguimientoFinal
+      );
+      console.log("seguimiento.numeroRevision:", seguimiento.numeroRevision);
 
-      // Aquí se implementaría la llamada al servicio para actualizar
-      // Por ahora solo simulamos el guardado
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Validar que haya cambios
+      const hasChanges =
+        editData.estado !== seguimiento.estado ||
+        editData.fechaRevision !== seguimiento.fechaRevision ||
+        editData.fechaSeguimientoFinal !== seguimiento.fechaSeguimientoFinal ||
+        editData.numeroRevision !== seguimiento.numeroRevision;
 
-      onSuccess();
+      console.log("hasChanges:", hasChanges);
+
+      if (!hasChanges) {
+        alert("No hay cambios para guardar");
+        return;
+      }
+
+      console.log("Llamando a updateSeguimiento...");
+      // Actualizar el seguimiento
+      const updatedSeguimiento = await updateSeguimiento(
+        seguimiento.id,
+        editData
+      );
+
+      console.log("Respuesta de updateSeguimiento:", updatedSeguimiento);
+
+      if (updatedSeguimiento) {
+        alert("Seguimiento actualizado correctamente");
+        onSuccess();
+      } else {
+        alert("No se pudo actualizar el seguimiento");
+      }
     } catch (error) {
       console.error("Error al guardar:", error);
       alert("Error al guardar los cambios");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -98,18 +131,46 @@ export function SeguimientoEditModal({
     );
   };
 
-  const handleDetalleSave = (index: number) => {
-    setDetalles((prev) =>
-      prev.map((d, i) =>
-        i === index
-          ? {
-              ...d,
-              isEditing: false,
-              ...d.editData,
-            }
-          : d
-      )
-    );
+  const handleDetalleSave = async (index: number) => {
+    try {
+      const detalle = detalles[index];
+      if (!detalle) return;
+
+      // Si es un detalle temporal (nuevo), crear
+      if (detalle.id.startsWith("temp-")) {
+        // Aquí se implementaría la creación del detalle
+        // Por ahora solo actualizamos el estado local
+        setDetalles((prev) =>
+          prev.map((d, i) =>
+            i === index
+              ? {
+                  ...d,
+                  isEditing: false,
+                  ...d.editData,
+                }
+              : d
+          )
+        );
+      } else {
+        // Si es un detalle existente, actualizar
+        // Aquí se implementaría la actualización del detalle
+        // Por ahora solo actualizamos el estado local
+        setDetalles((prev) =>
+          prev.map((d, i) =>
+            i === index
+              ? {
+                  ...d,
+                  isEditing: false,
+                  ...d.editData,
+                }
+              : d
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error al guardar detalle:", error);
+      alert("Error al guardar el detalle");
+    }
   };
 
   const handleDetalleCancel = (index: number) => {
@@ -676,11 +737,11 @@ export function SeguimientoEditModal({
 
           <Button
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isUpdating}
             className="flex items-center space-x-2"
           >
             <Save className="h-4 w-4" />
-            {isLoading ? "Guardando..." : "Guardar Cambios"}
+            {isUpdating ? "Guardando..." : "Guardar Cambios"}
           </Button>
         </div>
       </div>
