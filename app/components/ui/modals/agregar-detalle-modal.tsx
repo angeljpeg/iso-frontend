@@ -22,15 +22,6 @@ export function AgregarDetalleModal({
   detalleExistenteProp,
   onDetalleCreated,
 }: AgregarDetalleModalProps) {
-  console.log(
-    "🔍 AgregarDetalleModal renderizado con seguimientoId:",
-    seguimientoId
-  );
-  console.log("🔍 AgregarDetalleModal renderizado con tema:", tema);
-  console.log(
-    "🔍 AgregarDetalleModal renderizado con tema.semanaProgramada:",
-    tema?.semanaProgramada
-  );
   const { createDetalle, updateDetalle, isLoading, error, clearError } =
     useSeguimientoDetalleActions();
 
@@ -91,20 +82,13 @@ export function AgregarDetalleModal({
   const updateEstadoAvance = useCallback(
     (semana: number) => {
       if (!tema?.semanaProgramada) {
-        console.log("⚠️ No hay semana programada para el tema");
         return;
       }
 
       const diferencia = semana - tema.semanaProgramada;
-      console.log("🔍 Calculando estado automático:", {
-        semana,
-        semanaProgramada: tema.semanaProgramada,
-        diferencia,
-      });
 
       if (diferencia >= 2) {
         // Si la diferencia es >= 2, estado = RETRASADO
-        console.log("🚨 Estado automático: RETRASADO (diferencia >= 2)");
         setFormData((prev) => ({
           ...prev,
           estadoAvance: EstadoAvance.RETRASADO,
@@ -115,14 +99,12 @@ export function AgregarDetalleModal({
         }));
       } else if (diferencia >= 0) {
         // Si la diferencia es >= 0 (se cumple o se adelanta), estado = COMPLETADO
-        console.log("✅ Estado automático: COMPLETADO (diferencia >= 0)");
         setFormData((prev) => ({
           ...prev,
           estadoAvance: EstadoAvance.COMPLETADO,
         }));
       } else {
         // Si la diferencia es < 0 (está adelantado), permitir selección manual
-        console.log("🔄 Estado automático: EN_PROGRESO (diferencia < 0)");
         setFormData((prev) => ({
           ...prev,
           estadoAvance: EstadoAvance.EN_PROGRESO,
@@ -133,22 +115,7 @@ export function AgregarDetalleModal({
   );
 
   useEffect(() => {
-    console.log("🔍 useEffect del modal ejecutándose:", {
-      tema: !!tema,
-      isOpen,
-      seguimientoId: !!seguimientoId,
-      temaSemanaProgramada: tema?.semanaProgramada,
-    });
-
     if (tema && isOpen) {
-      console.log("🔍 Modal abierto - seguimientoId:", seguimientoId);
-      console.log("🔍 Modal abierto - tema:", tema);
-      console.log(
-        "🔍 Modal abierto - tema.semanaProgramada:",
-        tema.semanaProgramada
-      );
-      console.log("🔍 Modal abierto - detalleExistente:", detalleExistente);
-
       if (detalleExistente) {
         // Si estamos editando, precargar los datos existentes
         setFormData({
@@ -181,28 +148,13 @@ export function AgregarDetalleModal({
   // Efecto adicional para forzar la actualización del estado cuando cambie la semana
   useEffect(() => {
     if (tema?.semanaProgramada && formData.semanaTerminada) {
-      console.log("🔄 Forzando actualización de estado por cambio de semana");
-      console.log("🔍 Tema disponible:", tema);
-      console.log("🔍 Semana programada:", tema.semanaProgramada);
-      console.log("🔍 Semana terminada:", formData.semanaTerminada);
       updateEstadoAvance(formData.semanaTerminada);
-    } else {
-      console.log("⚠️ No se puede actualizar estado automáticamente:", {
-        temaDisponible: !!tema,
-        semanaProgramada: tema?.semanaProgramada,
-        semanaTerminada: formData.semanaTerminada,
-      });
     }
   }, [formData.semanaTerminada, tema?.semanaProgramada, updateEstadoAvance]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-
-    // Debug: verificar el seguimientoId
-    console.log("🔍 Debug - seguimientoId:", seguimientoId);
-    console.log("🔍 Debug - detalleExistente:", detalleExistente);
-    console.log("🔍 Debug - formData:", formData);
 
     // Validar campos obligatorios cuando el estado es RETRASADO
     if (formData.estadoAvance === EstadoAvance.RETRASADO) {
@@ -260,7 +212,6 @@ export function AgregarDetalleModal({
           ...formData,
           seguimientoCursoId: seguimientoId,
         };
-        console.log("📤 Creando nuevo detalle:", detalleData);
         result = await createDetalle(detalleData);
       } else if (isDetalleBloqueado) {
         // No se puede editar (estado bloqueado)
@@ -275,7 +226,6 @@ export function AgregarDetalleModal({
       }
 
       if (result !== null) {
-        console.log("✅ Operación exitosa, cerrando modal");
         onClose();
         // Llamar al callback con el mensaje correcto
         if (detalleExistente) {
@@ -285,8 +235,6 @@ export function AgregarDetalleModal({
           // Si es creación, mostrar mensaje de agregado
           onDetalleCreated?.();
         }
-      } else {
-        console.log("❌ Operación falló");
       }
     } catch (err) {
       console.error("❌ Error en la operación:", err);
@@ -342,12 +290,6 @@ export function AgregarDetalleModal({
             value={formData.semanaTerminada}
             onChange={(e) => {
               const semana = parseInt(e.target.value);
-              console.log("🔍 onChange semana:", {
-                valorOriginal: e.target.value,
-                semanaParseada: semana,
-                temaDisponible: !!tema,
-                semanaProgramada: tema?.semanaProgramada,
-              });
 
               setFormData((prev) => ({
                 ...prev,
@@ -355,10 +297,6 @@ export function AgregarDetalleModal({
               }));
 
               // Actualizar estado automáticamente
-              console.log(
-                "🔍 Llamando a updateEstadoAvance con semana:",
-                semana
-              );
               updateEstadoAvance(semana);
             }}
             disabled={
