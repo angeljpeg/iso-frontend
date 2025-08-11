@@ -9,6 +9,7 @@ export interface GetAllCargaAcademicaRequest {
   asignatura?: string;
   activo?: string;
   actual?: string;
+  esTutor?: string;
   page?: string;
   limit?: string;
 }
