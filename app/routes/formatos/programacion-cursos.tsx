@@ -3,13 +3,21 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useAuthStore } from "~/store/auth";
 import { useSeguimientosCurso } from "~/hooks/programacion-curso/useSeguimientosCurso";
 import { useSeguimientosByProfesor } from "~/hooks/programacion-curso/useSeguimientosByProfesor";
-import { ProgramacionCursosTable } from "~/components/formatos/programacion-cursos/ProgramacionCursosTable";
+import {
+  ProgramacionCursosTable,
+  ReportesSection,
+} from "~/components/formatos/programacion-cursos";
 import {
   ProgramacionCursosFilters,
   type FilterOptions,
 } from "~/components/formatos/programacion-cursos";
 import { Button } from "~/components/ui/Button";
-import { RefreshCw, FileText, Filter as FilterIcon } from "lucide-react";
+import {
+  RefreshCw,
+  FileText,
+  Filter as FilterIcon,
+  BarChart3,
+} from "lucide-react";
 import { PDFDownloadLinkComponent } from "~/components/formatos/pdf/PDFDownloader";
 
 export default function ProgramacionCursosPage() {
@@ -20,6 +28,7 @@ export default function ProgramacionCursosPage() {
   // Estado para filtros
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [showReportes, setShowReportes] = useState(false);
 
   // Estado de carga inicial
   const [isInitializing, setIsInitializing] = useState(true);
@@ -189,14 +198,25 @@ export default function ProgramacionCursosPage() {
 
             <div className="flex items-center space-x-3">
               {isCoordinador && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2"
-                >
-                  <FilterIcon className="h-4 w-4" />
-                  {showFilters ? "Ocultar" : "Mostrar"} Filtros
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center space-x-2"
+                  >
+                    <FilterIcon className="h-4 w-4" />
+                    {showFilters ? "Ocultar" : "Mostrar"} Filtros
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowReportes(!showReportes)}
+                    className="flex items-center space-x-2"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    {showReportes ? "Ocultar" : "Mostrar"} Reportes
+                  </Button>
+                </>
               )}
 
               <Button
@@ -229,6 +249,16 @@ export default function ProgramacionCursosPage() {
             profesores={profesores}
             isLoading={isLoading}
           />
+        )}
+
+        {/* Sección de Reportes para coordinadores */}
+        {isCoordinador && showReportes && (
+          <div className="mb-8">
+            <ReportesSection
+              cuatrimestreId={filters.cuatrimestreId}
+              profesorId={filters.profesorId}
+            />
+          </div>
         )}
 
         {/* Información de paginación */}
