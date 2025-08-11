@@ -39,6 +39,25 @@ export function ProgramacionCursosTable({
     "details" | "edit" | "delete" | null
   >(null);
 
+  // Logs para debugging
+  console.log("=== DEBUG PROGRAMACION CURSOS TABLE ===");
+  console.log("seguimientos:", seguimientos);
+  console.log("isLoading:", isLoading);
+  console.log("isCoordinador:", isCoordinador);
+
+  if (seguimientos.length > 0) {
+    console.log("Primer seguimiento:", seguimientos[0]);
+    console.log(
+      "Primer seguimiento.cuatrimestre:",
+      seguimientos[0].cuatrimestre
+    );
+    console.log(
+      "Primer seguimiento.cargaAcademica:",
+      seguimientos[0].cargaAcademica
+    );
+  }
+  console.log("=====================================");
+
   const handleViewDetails = (seguimiento: SeguimientoCurso) => {
     setSelectedSeguimiento(seguimiento);
     setModalType("details");
@@ -214,14 +233,14 @@ export function ProgramacionCursosTable({
                   <div className="flex items-center">
                     <User className="h-4 w-4 text-gray-400 mr-2" />
                     <div className="text-sm font-medium text-gray-900">
-                      {seguimiento.cargaAcademica.profesor?.nombre}{" "}
-                      {seguimiento.cargaAcademica.profesor?.apellido}
+                      {seguimiento.cargaAcademica?.profesor?.nombre || "N/A"}{" "}
+                      {seguimiento.cargaAcademica?.profesor?.apellido || ""}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {seguimiento.cargaAcademica.asignatura}
+                    {seguimiento.cargaAcademica?.asignatura || "N/A"}
                   </div>
                   <div className="text-sm text-gray-500">
                     {/* La clave de asignatura no está disponible en el tipo actual */}
@@ -232,7 +251,7 @@ export function ProgramacionCursosTable({
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                     <div className="text-sm text-gray-900">
-                      {seguimiento.cuatrimestre.nombreGenerado}
+                      {seguimiento.cuatrimestre?.nombreGenerado || "N/A"}
                     </div>
                   </div>
                 </td>
@@ -247,7 +266,7 @@ export function ProgramacionCursosTable({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col space-y-1">
-                    {seguimiento.detalles.slice(0, 3).map((detalle, index) => (
+                    {seguimiento.detalles?.slice(0, 3).map((detalle, index) => (
                       <Badge
                         key={detalle.id}
                         variant="outline"
@@ -258,11 +277,12 @@ export function ProgramacionCursosTable({
                         Sem {detalle.semanaTerminada}: {detalle.estadoAvance}
                       </Badge>
                     ))}
-                    {seguimiento.detalles.length > 3 && (
-                      <span className="text-xs text-gray-500">
-                        +{seguimiento.detalles.length - 3} más
-                      </span>
-                    )}
+                    {seguimiento.detalles &&
+                      seguimiento.detalles.length > 3 && (
+                        <span className="text-xs text-gray-500">
+                          +{seguimiento.detalles.length - 3} más
+                        </span>
+                      )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

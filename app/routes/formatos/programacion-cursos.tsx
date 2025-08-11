@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useAuthStore } from "~/store/auth";
 import { useSeguimientosCurso } from "~/hooks/programacion-curso/useSeguimientosCurso";
@@ -19,6 +19,9 @@ export default function ProgramacionCursosPage() {
   // Estado para filtros
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showFilters, setShowFilters] = useState(false);
+
+  // Estado de carga inicial
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Hook para coordinadores (todos los seguimientos)
   const {
@@ -41,7 +44,7 @@ export default function ProgramacionCursosPage() {
     updateOptions: updateOptionsProfesor,
     refresh: refreshProfesor,
   } = useSeguimientosByProfesor({
-    profesorId: isCoordinador ? undefined : usuario?.id,
+    profesorId: usuario?.id || "",
     autoFetch: !isCoordinador && !!usuario?.id,
   });
 
@@ -52,6 +55,44 @@ export default function ProgramacionCursosPage() {
   const isLoading = isCoordinador ? isLoadingCoordinador : isLoadingProfesor;
   const error = isCoordinador ? errorCoordinador : errorProfesor;
   const pagination = isCoordinador ? paginationCoordinador : paginationProfesor;
+
+  // Asegurar que seguimientos siempre sea un array
+  const seguimientosArray = seguimientos || [];
+
+  // Logs para debugging
+  console.log("=== DEBUG PROGRAMACION CURSOS ===");
+  console.log("Usuario:", usuario);
+  console.log("isCoordinador:", isCoordinador);
+  console.log("seguimientosCoordinador:", seguimientosCoordinador);
+  console.log("seguimientosProfesor:", seguimientosProfesor);
+  console.log("seguimientos:", seguimientos);
+  console.log("seguimientosArray:", seguimientosArray);
+  console.log("error:", error);
+  console.log("isLoading:", isLoading);
+  console.log("================================");
+
+  // Efecto para manejar la inicialización
+  useEffect(() => {
+    if (usuario) {
+      setIsInitializing(false);
+    }
+  }, [usuario]);
+
+  // Mostrar estado de carga inicial
+  if (isInitializing) {
+    return (
+      <DashboardLayout>
+        <div className="p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Inicializando...</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -107,7 +148,18 @@ export default function ProgramacionCursosPage() {
         <div className="p-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <h3 className="text-lg font-medium text-red-800 mb-2">Error</h3>
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700 mb-2">{error}</p>
+            <div className="text-sm text-red-600 mb-3">
+              <p>
+                <strong>Rol del usuario:</strong> {usuario?.rol}
+              </p>
+              <p>
+                <strong>Es coordinador:</strong> {isCoordinador ? "Sí" : "No"}
+              </p>
+              <p>
+                <strong>ID del usuario:</strong> {usuario?.id}
+              </p>
+            </div>
             <Button onClick={handleRefresh} className="mt-3">
               Reintentar
             </Button>
@@ -210,7 +262,7 @@ export default function ProgramacionCursosPage() {
         {/* Tabla de seguimientos */}
         <div className="bg-white rounded-lg border border-gray-200">
           <ProgramacionCursosTable
-            seguimientos={seguimientos}
+            seguimientos={seguimientosArray}
             isLoading={isLoading}
             isCoordinador={isCoordinador}
             onRefresh={handleRefresh}
@@ -218,7 +270,7 @@ export default function ProgramacionCursosPage() {
         </div>
 
         {/* Estado vacío */}
-        {!isLoading && seguimientos.length === 0 && (
+        {!isLoading && seguimientosArray.length === 0 && (
           <div className="text-center py-12">
             <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -229,6 +281,18 @@ export default function ProgramacionCursosPage() {
                 ? "No se encontraron seguimientos de cursos con los filtros aplicados."
                 : "No tienes seguimientos de cursos asignados en este momento."}
             </p>
+            <div className="text-sm text-gray-400 mb-4">
+              <p>
+                <strong>Rol:</strong> {usuario?.rol}
+              </p>
+              <p>
+                <strong>Usuario ID:</strong> {usuario?.id}
+              </p>
+              <p>
+                <strong>Estado de carga:</strong>{" "}
+                {isLoading ? "Cargando..." : "Completado"}
+              </p>
+            </div>
             <Button onClick={handleRefresh} variant="outline">
               Actualizar
             </Button>
