@@ -61,7 +61,7 @@ export interface Tutoria {
   actividadesTutoriaGrupal?: string[];
   estado: EstadoProfesor;
   estadoRevision: EstadoRevision;
-  cargaAcademicaId: number;
+  cargaAcademicaId: string;
   detalles: TutoriaDetalle[];
   createdAt: string;
   updatedAt: string;
@@ -91,7 +91,7 @@ export interface CreateTutoriaDto {
   fecha: string;
   observaciones?: string;
   actividadesTutoriaGrupal?: string[];
-  cargaAcademicaId: number;
+  cargaAcademicaId: string;
 }
 
 export interface CreateTutoriaDetalleDto {
@@ -109,12 +109,8 @@ export interface CreateTutoriaDetalleDto {
 // Respuestas de la API
 export interface TutoriasResponse {
   data: Tutoria[];
-  message: string;
-  status: number;
 }
 
 export interface TutoriaResponse {
   data: Tutoria;
-  message: string;
-  status: number;
 }

@@ -17,7 +17,7 @@ interface CrearTutoriaModalProps {
     };
   };
   nombreTutor: string;
-  cargaAcademicaId: number;
+  cargaAcademicaId: string;
 }
 
 export function CrearTutoriaModal({

@@ -4,6 +4,7 @@ import type {
   TutoriaResponse,
   CreateTutoriaDto,
   CreateTutoriaDetalleDto,
+  Tutoria,
 } from "../types/tutorias";
 
 const BASE_URL = "/tutorias";
@@ -26,10 +27,13 @@ export const tutoriasService = {
     return response.json();
   },
 
-  // Obtener tutorías por grupo
-  async getByGrupo(grupoId: string, token: string): Promise<TutoriasResponse> {
+  // Obtener tutorías por carga académica
+  async getByCargaAcademica(
+    cargaAcademicaId: string,
+    token: string
+  ): Promise<Tutoria[]> {
     const response = await fetch(
-      `${API_BASE_URL}${BASE_URL}/grupo/${grupoId}`,
+      `${API_BASE_URL}${BASE_URL}/carga-academica/${cargaAcademicaId}`,
       {
         method: "GET",
         headers: {
@@ -41,11 +45,24 @@ export const tutoriasService = {
 
     if (!response.ok) {
       throw new Error(
-        `Error al obtener tutorías del grupo: ${response.statusText}`
+        `Error al obtener tutorías de la carga académica: ${response.statusText}`
       );
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log("Tutorías obtenidas:", data);
+
+    return data;
+  },
+
+  // Obtener tutorías por grupo (mantener compatibilidad)
+  async getByGrupo(grupoId: string, token: string): Promise<TutoriasResponse> {
+    console.warn(
+      "getByGrupo está deprecado, usa getByCargaAcademica en su lugar"
+    );
+    throw new Error(
+      "Este método está deprecado. Usa getByCargaAcademica con el ID de la carga académica"
+    );
   },
 
   // Obtener una tutoria específica

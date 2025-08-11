@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import { useAuthStore } from "../store/auth";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-import { useGrupo } from "../hooks/useGrupo";
 import { Button } from "../components/ui/Button";
 import { useAsignatura } from "../hooks/asignaturas/useAsignatura";
 import { Card } from "../components/ui/Card";
@@ -10,7 +10,9 @@ import { getAllCargaAcademica } from "../services/carga-academica.service";
 import { tutoriasService } from "../services/tutorias.service";
 import { CrearTutoriaModal } from "../components/ui/modals/crear-tutoria-modal";
 import { AgregarDetalleTutoriaModal } from "../components/ui/modals/agregar-detalle-tutoria-modal";
+import { getOneGrupo } from "../services/grupos";
 import type { CargaAcademica } from "../types/carga-academica";
+import type { Grupo } from "../types/grupos";
 import type {
   Tutoria,
   CreateTutoriaDto,
@@ -77,11 +79,11 @@ export default function GrupoPage() {
   const { grupoId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, accessToken } = useAuthStore();
-  const {
-    grupo,
-    isLoading: grupoLoading,
-    error: grupoError,
-  } = useGrupo(grupoId!);
+
+  // Estado para el grupo
+  const [grupo, setGrupo] = useState<Grupo | null>(null);
+  const [grupoLoading, setGrupoLoading] = useState(true);
+  const [grupoError, setGrupoError] = useState<string | null>(null);
 
   // Estado para las cargas académicas del profesor logueado
   const [misCargasAcademicas, setMisCargasAcademicas] = useState<
@@ -92,6 +94,13 @@ export default function GrupoPage() {
 
   // Estado para las tutorías
   const [tutorias, setTutorias] = useState<Tutoria[]>([]);
+
+  // Asegurar que tutorias sea siempre un array
+  const tutoriasSeguras = Array.isArray(tutorias) ? tutorias : [];
+
+  // Debug: verificar el estado de tutorias
+  console.log("Estado actual de tutorias:", tutorias);
+  console.log("tutoriasSeguras:", tutoriasSeguras);
   const [tutoriasLoading, setTutoriasLoading] = useState(false);
   const [tutoriasError, setTutoriasError] = useState<string | null>(null);
 
@@ -108,23 +117,46 @@ export default function GrupoPage() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Cargar datos del grupo una sola vez
+  useEffect(() => {
+    const fetchGrupo = async () => {
+      if (!accessToken || !grupoId) return;
+
+      try {
+        setGrupoLoading(true);
+        setGrupoError(null);
+        const response = await getOneGrupo({ token: accessToken, id: grupoId });
+        setGrupo(response);
+      } catch (err) {
+        console.error("Error cargando grupo:", err);
+        setGrupoError(
+          err instanceof Error ? err.message : "Error al cargar el grupo"
+        );
+      } finally {
+        setGrupoLoading(false);
+      }
+    };
+
+    if (isAuthenticated && accessToken && grupoId) {
+      fetchGrupo();
+    }
+  }, [isAuthenticated, accessToken, grupoId]);
+
   // Cargar las cargas académicas del profesor logueado
   useEffect(() => {
     const fetchMisCargasAcademicas = async () => {
-      if (!accessToken) {
-        setCargasError("No hay token de autenticación");
-        return;
-      }
+      if (!accessToken || !grupoId) return;
 
       try {
         setCargasLoading(true);
         setCargasError(null);
         const data = await getAllCargaAcademica({
-          grupoId: grupoId!,
+          grupoId: grupoId,
           token: accessToken,
         });
         setMisCargasAcademicas(data.data);
       } catch (err) {
+        console.error("Error cargando cargas académicas:", err);
         setCargasError(
           err instanceof Error ? err.message : "Error al cargar mis asignaturas"
         );
@@ -133,7 +165,7 @@ export default function GrupoPage() {
       }
     };
 
-    if (isAuthenticated && accessToken) {
+    if (isAuthenticated && accessToken && grupoId) {
       fetchMisCargasAcademicas();
     }
   }, [isAuthenticated, accessToken, grupoId]);
@@ -143,38 +175,59 @@ export default function GrupoPage() {
     (carga) => carga.grupoId === grupoId
   );
 
-  // Cargar tutorías si el profesor es tutor del grupo
-  useEffect(() => {
-    if (
-      isAuthenticated &&
-      accessToken &&
-      cargasDelGrupo.some((carga) => carga.esTutor)
-    ) {
-      cargarTutorias();
-    }
-  }, [isAuthenticated, accessToken, cargasDelGrupo]);
-
   // Verificar si el profesor es tutor del grupo
   const esTutorDelGrupo = cargasDelGrupo.some((carga) => carga.esTutor);
   const cargaTutoria = cargasDelGrupo.find((carga) => carga.esTutor);
 
   // Función para cargar las tutorías del grupo
-  const cargarTutorias = async () => {
-    if (!accessToken || !esTutorDelGrupo) return;
+  const cargarTutorias = useCallback(async () => {
+    if (
+      !accessToken ||
+      !esTutorDelGrupo ||
+      !cargaTutoria?.id ||
+      tutoriasLoading
+    ) {
+      return;
+    }
 
     try {
       setTutoriasLoading(true);
       setTutoriasError(null);
-      const response = await tutoriasService.getByGrupo(grupoId!, accessToken);
-      setTutorias(response.data);
+      const response = await tutoriasService.getByCargaAcademica(
+        cargaTutoria.id,
+        accessToken
+      );
+      setTutorias(response);
     } catch (err) {
+      console.error("Error en cargarTutorias:", err);
       setTutoriasError(
         err instanceof Error ? err.message : "Error al cargar las tutorías"
       );
     } finally {
       setTutoriasLoading(false);
     }
-  };
+  }, [accessToken, esTutorDelGrupo, cargaTutoria, tutoriasLoading]);
+
+  // Cargar tutorías solo cuando sea necesario y si el profesor es tutor
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      accessToken &&
+      grupoId &&
+      cargasDelGrupo.length > 0 &&
+      esTutorDelGrupo &&
+      !tutoriasLoading &&
+      tutoriasSeguras.length === 0
+    ) {
+      cargarTutorias();
+    }
+  }, [
+    cargasDelGrupo,
+    grupoId,
+    esTutorDelGrupo,
+    cargarTutorias,
+    tutoriasLoading,
+  ]);
 
   // Función para crear una nueva tutoría
   const handleCrearTutoria = async (tutoriaData: CreateTutoriaDto) => {
@@ -183,11 +236,15 @@ export default function GrupoPage() {
     try {
       setIsSubmitting(true);
       const response = await tutoriasService.create(tutoriaData, accessToken);
+      console.log("Respuesta de crear tutoría:", response);
       setTutorias((prev) => [...prev, response.data]);
       setShowCrearTutoriaModal(false);
+      toast.success("Tutoría creada exitosamente");
     } catch (err) {
       console.error("Error al crear tutoría:", err);
-      // Aquí podrías mostrar un toast o notificación de error
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al crear la tutoría";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -208,6 +265,8 @@ export default function GrupoPage() {
         accessToken
       );
 
+      console.log("Respuesta de agregar detalle:", response);
+
       // Actualizar la tutoría en el estado local
       setTutorias((prev) =>
         prev.map((t) => (t.id === tutoriaSeleccionada.id ? response.data : t))
@@ -217,7 +276,9 @@ export default function GrupoPage() {
       setTutoriaSeleccionada(null);
     } catch (err) {
       console.error("Error al agregar detalle:", err);
-      // Aquí podrías mostrar un toast o notificación de error
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al agregar el detalle";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -416,7 +477,7 @@ export default function GrupoPage() {
 
               {!tutoriasLoading && !tutoriasError && (
                 <div className="space-y-4">
-                  {tutorias.length === 0 ? (
+                  {tutoriasSeguras.length === 0 ? (
                     <div className="py-8 text-center">
                       <div className="p-6 bg-gray-50 rounded-lg">
                         <svg
@@ -443,7 +504,7 @@ export default function GrupoPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {tutorias.map((tutoria) => (
+                      {tutoriasSeguras.map((tutoria) => (
                         <Card
                           key={tutoria.id}
                           className="p-4 transition-shadow duration-200 cursor-pointer hover:shadow-md hover:bg-gray-50"
@@ -500,7 +561,7 @@ export default function GrupoPage() {
             nombreTutor={`${cargaTutoria.profesor?.nombre || ""} ${
               cargaTutoria.profesor?.apellido || ""
             }`}
-            cargaAcademicaId={parseInt(cargaTutoria.id)}
+            cargaAcademicaId={cargaTutoria.id}
           />
         )}
 
