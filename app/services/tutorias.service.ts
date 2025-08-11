@@ -108,14 +108,17 @@ export const tutoriasService = {
     detalle: CreateTutoriaDetalleDto,
     token: string
   ): Promise<TutoriaResponse> {
-    const response = await fetch(`${API_BASE_URL}${BASE_URL}/detalles`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(detalle),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}${BASE_URL}/${detalle.tutoriaId}/detalles`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(detalle),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error al agregar detalle: ${response.statusText}`);

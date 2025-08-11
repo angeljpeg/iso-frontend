@@ -9,6 +9,7 @@ interface FormInputProps
   icon?: React.ReactNode;
   registration?: UseFormRegisterReturn;
   required?: boolean;
+  onChange?: (value: string) => void;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
@@ -20,12 +21,23 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       icon,
       registration,
       required,
+      onChange,
       className = "",
       ...props
     },
     ref
   ) => {
     const errorMessage = typeof error === "string" ? error : error?.message;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (onChange) {
+        onChange(e.target.value);
+      }
+      // Si hay registration, también llamar al onChange de react-hook-form
+      if (registration?.onChange) {
+        registration.onChange(e);
+      }
+    };
 
     return (
       <div className="w-full">
@@ -56,6 +68,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               }
               ${className}
             `}
+            onChange={handleChange}
             {...registration}
             {...props}
           />

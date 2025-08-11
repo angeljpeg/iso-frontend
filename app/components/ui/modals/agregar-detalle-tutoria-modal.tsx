@@ -38,14 +38,73 @@ export function AgregarDetalleTutoriaModal({
     field: keyof CreateTutoriaDetalleDto,
     value: any
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    console.log(`Campo: ${field}, Valor:`, value, `Tipo:`, typeof value);
+
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // Si se desmarca "fueAtendido", limpiar causaNoAtencion
+      if (field === "fueAtendido" && !value) {
+        newData.causaNoAtencion = undefined;
+      }
+
+      // Si se desmarca "causoBaja", limpiar causaBaja
+      if (field === "causoBaja" && !value) {
+        newData.causaBaja = undefined;
+      }
+
+      // Si se marca "fueAtendido", limpiar causaNoAtencion
+      if (field === "fueAtendido" && value) {
+        newData.causaNoAtencion = undefined;
+      }
+
+      // Si se marca "causoBaja", limpiar causaBaja para que se seleccione una nueva
+      if (field === "causoBaja" && value) {
+        newData.causaBaja = undefined;
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar campos obligatorios
+    if (!formData.nombreAlumno?.trim()) {
+      alert("El nombre del alumno es obligatorio");
+      return;
+    }
+
+    if (!formData.vulnerabilidad) {
+      alert("El tipo de vulnerabilidad es obligatorio");
+      return;
+    }
+
+    if (!formData.areaCanalizacion) {
+      alert("El área de canalización es obligatorio");
+      return;
+    }
+
+    // Validar que si no fue atendido, debe tener causa de no atención
+    if (!formData.fueAtendido && !formData.causaNoAtencion) {
+      alert("Si el alumno no fue atendido, debe especificar la causa");
+      return;
+    }
+
+    // Validar que si causó baja, debe tener causa de baja
+    if (formData.causoBaja && !formData.causaBaja) {
+      alert("Si el alumno causó baja, debe especificar la causa");
+      return;
+    }
+
+    console.log("Estado del formulario antes del envío:", formData);
+    console.log(
+      "nombreAlumno:",
+      formData.nombreAlumno,
+      "Tipo:",
+      typeof formData.nombreAlumno
+    );
     onSubmit(formData);
   };
 
@@ -77,18 +136,34 @@ export function AgregarDetalleTutoriaModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Nota sobre campos obligatorios */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Nota:</strong> Los campos marcados con{" "}
+              <span className="text-red-500">*</span> son obligatorios.
+            </p>
+          </div>
+
           {/* Nombre del Alumno */}
           <FormInput
             label="Nombre del Alumno"
-            value={formData.nombreAlumno}
-            onChange={(value) => handleInputChange("nombreAlumno", value)}
+            value={formData.nombreAlumno || ""}
+            onChange={(value) => {
+              console.log(
+                "FormInput onChange llamado con valor:",
+                value,
+                "Tipo:",
+                typeof value
+              );
+              handleInputChange("nombreAlumno", value);
+            }}
             required
             placeholder="Ingresa el nombre completo del alumno"
           />
 
           {/* Tipo de Vulnerabilidad */}
           <RadioGroup
-            label="Tipo de Vulnerabilidad"
+            label="Tipo de Vulnerabilidad *"
             value={formData.vulnerabilidad}
             onChange={(value) =>
               handleInputChange("vulnerabilidad", value as Vulnerabilidad)
@@ -104,7 +179,7 @@ export function AgregarDetalleTutoriaModal({
 
           {/* Área de Canalización */}
           <RadioGroup
-            label="Área de Canalización"
+            label="Área de Canalización *"
             value={formData.areaCanalizacion}
             onChange={(value) =>
               handleInputChange("areaCanalizacion", value as AreaCanalizacion)
@@ -127,90 +202,150 @@ export function AgregarDetalleTutoriaModal({
           />
 
           {/* Fue Atendido */}
-          <FormCheckbox
-            label="¿El alumno fue atendido?"
-            checked={formData.fueAtendido}
-            onChange={(checked) => handleInputChange("fueAtendido", checked)}
-          />
+          <div className="space-y-2">
+            <FormCheckbox
+              label="¿El alumno fue atendido? *"
+              checked={formData.fueAtendido}
+              onChange={(checked) => handleInputChange("fueAtendido", checked)}
+              required
+            />
+            {formData.fueAtendido && (
+              <button
+                type="button"
+                onClick={() => handleInputChange("fueAtendido", false)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Desmarcar "Fue Atendido"
+              </button>
+            )}
+          </div>
 
           {/* Causa de No Atención (solo si no fue atendido) */}
           {!formData.fueAtendido && (
-            <RadioGroup
-              label="Causa de No Atención"
-              value={formData.causaNoAtencion || ""}
-              onChange={(value) =>
-                handleInputChange("causaNoAtencion", value as CausaNoAtencion)
-              }
-              options={[
-                {
-                  value: CausaNoAtencion.NO_PERSONAL,
-                  label: "No había personal que atendiera en el área",
-                },
-                {
-                  value: CausaNoAtencion.NO_ASISTIO,
-                  label: "El alumno no asistió al área canalizada",
-                },
-              ]}
-              required
-              name="causaNoAtencion"
-            />
+            <div className="space-y-2">
+              <RadioGroup
+                label="Causa de No Atención *"
+                value={formData.causaNoAtencion || ""}
+                onChange={(value) =>
+                  handleInputChange("causaNoAtencion", value as CausaNoAtencion)
+                }
+                options={[
+                  {
+                    value: CausaNoAtencion.NO_PERSONAL,
+                    label: "No había personal que atendiera en el área",
+                  },
+                  {
+                    value: CausaNoAtencion.NO_ASISTIO,
+                    label: "El alumno no asistió al área canalizada",
+                  },
+                ]}
+                required
+                name="causaNoAtencion"
+              />
+              <button
+                type="button"
+                onClick={() => handleInputChange("causaNoAtencion", undefined)}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Limpiar selección de causa
+              </button>
+            </div>
           )}
 
           {/* Presentó Mejora */}
-          <FormCheckbox
-            label="¿El alumno presentó mejora?"
-            checked={formData.presentoMejoria}
-            onChange={(checked) =>
-              handleInputChange("presentoMejoria", checked)
-            }
-          />
+          <div className="space-y-2">
+            <FormCheckbox
+              label="¿El alumno presentó mejora? *"
+              checked={formData.presentoMejoria}
+              onChange={(checked) =>
+                handleInputChange("presentoMejoria", checked)
+              }
+              required
+            />
+            {formData.presentoMejoria && (
+              <button
+                type="button"
+                onClick={() => handleInputChange("presentoMejoria", false)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Desmarcar "Presentó Mejora"
+              </button>
+            )}
+          </div>
 
           {/* Causó Baja */}
-          <FormCheckbox
-            label="¿El alumno causó baja?"
-            checked={formData.causoBaja}
-            onChange={(checked) => handleInputChange("causoBaja", checked)}
-          />
+          <div className="space-y-2">
+            <FormCheckbox
+              label="¿El alumno causó baja? *"
+              checked={formData.causoBaja}
+              onChange={(checked) => handleInputChange("causoBaja", checked)}
+              required
+            />
+            {formData.causoBaja && (
+              <button
+                type="button"
+                onClick={() => handleInputChange("causoBaja", false)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Desmarcar "Causó Baja"
+              </button>
+            )}
+          </div>
 
           {/* Causa de Baja (solo si causó baja) */}
           {formData.causoBaja && (
-            <RadioGroup
-              label="Causa de la Baja"
-              value={formData.causaBaja || ""}
-              onChange={(value) =>
-                handleInputChange("causaBaja", value as CausaBaja)
-              }
-              options={[
-                { value: CausaBaja.SIN_CAUSA, label: "Sin causa conocida" },
-                {
-                  value: CausaBaja.INCUMPLIMIENTO,
-                  label: "Incumplimiento de expectativas",
-                },
-                { value: CausaBaja.REPROBACION, label: "Reprobación" },
-                {
-                  value: CausaBaja.PROBLEMAS_ECONOMICOS,
-                  label: "Problemas económicos",
-                },
-                {
-                  value: CausaBaja.MOTIVOS_PERSONALES,
-                  label: "Motivos personales",
-                },
-                { value: CausaBaja.DISTANCIA_UT, label: "Distancia de la UT" },
-                {
-                  value: CausaBaja.PROBLEMAS_TRABAJO,
-                  label: "Problemas de trabajo",
-                },
-                { value: CausaBaja.CAMBIO_UT, label: "Cambio de UT" },
-                { value: CausaBaja.CAMBIO_CARRERA, label: "Cambio de carrera" },
-                {
-                  value: CausaBaja.FALTAS_REGLAMENTO,
-                  label: "Faltas al reglamento escolar",
-                },
-                { value: CausaBaja.OTRAS_CAUSAS, label: "Otras causas" },
-              ]}
-              required
-              name="causaBaja"
-            />
+            <div className="space-y-2">
+              <RadioGroup
+                label="Causa de la Baja *"
+                value={formData.causaBaja || ""}
+                onChange={(value) =>
+                  handleInputChange("causaBaja", value as CausaBaja)
+                }
+                options={[
+                  { value: CausaBaja.SIN_CAUSA, label: "Sin causa conocida" },
+                  {
+                    value: CausaBaja.INCUMPLIMIENTO,
+                    label: "Incumplimiento de expectativas",
+                  },
+                  { value: CausaBaja.REPROBACION, label: "Reprobación" },
+                  {
+                    value: CausaBaja.PROBLEMAS_ECONOMICOS,
+                    label: "Problemas económicos",
+                  },
+                  {
+                    value: CausaBaja.MOTIVOS_PERSONALES,
+                    label: "Motivos personales",
+                  },
+                  {
+                    value: CausaBaja.DISTANCIA_UT,
+                    label: "Distancia de la UT",
+                  },
+                  {
+                    value: CausaBaja.PROBLEMAS_TRABAJO,
+                    label: "Problemas de trabajo",
+                  },
+                  { value: CausaBaja.CAMBIO_UT, label: "Cambio de UT" },
+                  {
+                    value: CausaBaja.CAMBIO_CARRERA,
+                    label: "Cambio de carrera",
+                  },
+                  {
+                    value: CausaBaja.FALTAS_REGLAMENTO,
+                    label: "Faltas al reglamento escolar",
+                  },
+                  { value: CausaBaja.OTRAS_CAUSAS, label: "Otras causas" },
+                ]}
+                required
+                name="causaBaja"
+              />
+              <button
+                type="button"
+                onClick={() => handleInputChange("causaBaja", undefined)}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Limpiar selección de causa
+              </button>
+            </div>
           )}
 
           {/* Botones */}
@@ -225,7 +360,11 @@ export function AgregarDetalleTutoriaModal({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !formData.nombreAlumno.trim()}
+              disabled={
+                isLoading ||
+                !formData.nombreAlumno ||
+                formData.nombreAlumno.trim().length === 0
+              }
             >
               {isLoading ? "Guardando..." : "Guardar Detalle"}
             </Button>
