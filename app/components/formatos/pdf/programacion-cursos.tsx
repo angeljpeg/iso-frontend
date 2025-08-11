@@ -186,68 +186,137 @@ const styles = StyleSheet.create({
   },
 });
 
+// Función para agrupar seguimientos por asignatura
+const agruparSeguimientosPorAsignatura = (seguimientos: SeguimientoCurso[]) => {
+  const grupos = new Map<string, SeguimientoCurso[]>();
+
+  seguimientos.forEach((seguimiento) => {
+    const asignatura =
+      seguimiento.cargaAcademica?.asignatura || "Sin asignatura";
+    if (!grupos.has(asignatura)) {
+      grupos.set(asignatura, []);
+    }
+    grupos.get(asignatura)!.push(seguimiento);
+  });
+
+  return grupos;
+};
+
+// Función para calcular semanas del cuatrimestre
+const calcularSemanasCuatrimestre = (cuatrimestre: any) => {
+  if (!cuatrimestre?.fechaInicio || !cuatrimestre?.fechaFin) {
+    return 16; // Valor por defecto
+  }
+
+  const inicio = new Date(cuatrimestre.fechaInicio);
+  const fin = new Date(cuatrimestre.fechaFin);
+  const diferenciaMs = fin.getTime() - inicio.getTime();
+  const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
+  const semanas = Math.ceil(diferenciaDias / 7);
+
+  return Math.max(semanas, 1);
+};
+
+// Función para obtener información de retrasos
+const getRetrasoInfo = (seguimiento: SeguimientoCurso): string => {
+  if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
+    return "Sin retrasos reportados";
+  }
+
+  const retrasos = seguimiento.detalles.filter(
+    (d) => d.estadoAvance === "retrasado"
+  );
+  if (retrasos.length === 0) {
+    return "Al día";
+  }
+
+  return `Retraso en ${retrasos.length} temas`;
+};
+
+// Función para obtener información de evidencias
+const getEvidenciaInfo = (seguimiento: SeguimientoCurso): string => {
+  if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
+    return "Sin evidencia";
+  }
+
+  const evidencias = seguimiento.detalles.filter((d) => d.evidencias);
+  if (evidencias.length === 0) {
+    return "Pendiente evidencia";
+  }
+
+  return `${evidencias.length} evidencias presentadas`;
+};
+
+// Función para obtener información de justificaciones
+const getJustificacionInfo = (seguimiento: SeguimientoCurso): string => {
+  if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
+    return "Sin justificación";
+  }
+
+  const justificaciones = seguimiento.detalles.filter((d) => d.justificacion);
+  if (justificaciones.length === 0) {
+    return "Sin justificación";
+  }
+
+  return `${justificaciones.length} justificaciones presentadas`;
+};
+
+// Función para obtener información de acciones
+const getAccionesInfo = (seguimiento: SeguimientoCurso): string => {
+  if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
+    return "Sin acciones";
+  }
+
+  const acciones = seguimiento.detalles.filter((d) => d.acciones);
+  if (acciones.length === 0) {
+    return "Sin acciones definidas";
+  }
+
+  return `${acciones.length} acciones definidas`;
+};
+
 // Componente principal del PDF
 const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
   seguimientos,
   titulo = "Programación y Seguimiento de Cursos",
 }) => {
-  // Función para obtener información de retrasos
-  const getRetrasoInfo = (seguimiento: SeguimientoCurso): string => {
-    if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
-      return "Sin retrasos reportados";
-    }
+  // Agrupar seguimientos por asignatura
+  const seguimientosPorAsignatura =
+    agruparSeguimientosPorAsignatura(seguimientos);
 
-    const retrasos = seguimiento.detalles.filter(
-      (d) => d.estadoAvance === "retrasado"
-    );
-    if (retrasos.length === 0) {
-      return "Al día";
-    }
+  // Obtener la primera asignatura para mostrar información general
+  const primeraAsignatura = Array.from(seguimientosPorAsignatura.keys())[0];
+  const seguimientosPrimeraAsignatura =
+    seguimientosPorAsignatura.get(primeraAsignatura) || [];
+  const primerSeguimiento = seguimientosPrimeraAsignatura[0];
 
-    return `Retraso en ${retrasos.length} temas`;
-  };
+  // Calcular semanas del cuatrimestre
+  const semanasCuatrimestre = calcularSemanasCuatrimestre(
+    primerSeguimiento?.cuatrimestre
+  );
 
-  // Función para obtener información de evidencias
-  const getEvidenciaInfo = (seguimiento: SeguimientoCurso): string => {
-    if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
-      return "Sin evidencia";
-    }
+  // Obtener información del profesor
+  const profesor = primerSeguimiento?.cargaAcademica?.profesor;
+  const nombreProfesor = profesor
+    ? `${profesor.nombre} ${profesor.apellido}`
+    : "Profesor no asignado";
 
-    const evidencias = seguimiento.detalles.filter((d) => d.evidencias);
-    if (evidencias.length === 0) {
-      return "Pendiente evidencia";
-    }
+  // Obtener grupos únicos
+  const gruposUnicos = Array.from(
+    new Set(
+      seguimientosPrimeraAsignatura.map(
+        (s) => s.cargaAcademica?.grupo?.nombreGenerado || "Sin grupo"
+      )
+    )
+  ).filter((g) => g !== "Sin grupo");
 
-    return `${evidencias.length} evidencias presentadas`;
-  };
-
-  // Función para obtener información de justificaciones
-  const getJustificacionInfo = (seguimiento: SeguimientoCurso): string => {
-    if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
-      return "Sin justificación";
-    }
-
-    const justificaciones = seguimiento.detalles.filter((d) => d.justificacion);
-    if (justificaciones.length === 0) {
-      return "Sin justificación";
-    }
-
-    return `${justificaciones.length} justificaciones presentadas`;
-  };
-
-  // Función para obtener información de acciones
-  const getAccionesInfo = (seguimiento: SeguimientoCurso): string => {
-    if (!seguimiento.detalles || seguimiento.detalles.length === 0) {
-      return "Sin acciones";
-    }
-
-    const acciones = seguimiento.detalles.filter((d) => d.acciones);
-    if (acciones.length === 0) {
-      return "Sin acciones definidas";
-    }
-
-    return `${acciones.length} acciones definidas`;
-  };
+  // Obtener cuatrimestre
+  const cuatrimestre = primerSeguimiento?.cuatrimestre;
+  const nombreCuatrimestre =
+    cuatrimestre?.nombreGenerado || "Cuatrimestre no definido";
+  const año = cuatrimestre?.fechaInicio
+    ? new Date(cuatrimestre.fechaInicio).getFullYear()
+    : new Date().getFullYear();
 
   return (
     <Document>
@@ -277,11 +346,7 @@ const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
             <View style={styles.courseInfo}>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Profesor:</Text>
-                <Text style={styles.fieldValue}>
-                  {seguimientos[0]?.cargaAcademica?.profesor?.nombre || "Angel"}{" "}
-                  {seguimientos[0]?.cargaAcademica?.profesor?.apellido ||
-                    "Gonzalez"}
-                </Text>
+                <Text style={styles.fieldValue}>{nombreProfesor}</Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Horas/Semana:</Text>
@@ -289,15 +354,15 @@ const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Grupos a impartir:</Text>
-                <Text style={styles.fieldValue}>TIDS 1-1, TIDS 1-2</Text>
+                <Text style={styles.fieldValue}>{gruposUnicos.join(", ")}</Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Cuatrimestre:</Text>
-                <Text style={styles.fieldValue}>Mayo-Agosto</Text>
+                <Text style={styles.fieldValue}>{nombreCuatrimestre}</Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Año:</Text>
-                <Text style={styles.fieldValue}>2024</Text>
+                <Text style={styles.fieldValue}>{año}</Text>
               </View>
             </View>
           </View>
@@ -359,78 +424,82 @@ const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
             <Text style={[styles.subHeader, { width: "15%" }]}>Revisión</Text>
           </View>
 
-          {/* Filas de datos */}
-          {seguimientos && seguimientos.length > 0 ? (
-            seguimientos.map((seguimiento, index) => (
-              <View key={seguimiento.id} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { width: "10%" }]}>
-                  {index + 1}
-                </Text>
-                <Text style={[styles.tableCell, { width: "20%" }]}>
-                  {seguimiento.cargaAcademica?.asignatura ||
-                    "DESARROLLO MOVIL MULTIPLATAFORMA"}
-                </Text>
-                <Text style={[styles.tableCell, { width: "10%" }]}>
-                  {seguimiento.detalles?.[0]?.semanaTerminada || ""}
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  {getJustificacionInfo(seguimiento)}
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  {getAccionesInfo(seguimiento)}
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  {getEvidenciaInfo(seguimiento)}
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  {seguimiento.estado === EstadoSeguimiento.REVISADO
-                    ? "Revisado"
-                    : "Pendiente"}
-                </Text>
-              </View>
-            ))
-          ) : (
-            // Filas de ejemplo si no hay seguimientos
-            <>
-              <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, { width: "10%" }]}></Text>
-                <Text style={[styles.tableCell, { width: "20%" }]}>
-                  DESARROLLO MOVIL MULTIPLATAFORMA
-                </Text>
-                <Text style={[styles.tableCell, { width: "10%" }]}></Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  Sin justificación
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  Sin acciones
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  Sin evidencia
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  Pendiente
-                </Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, { width: "10%" }]}>2</Text>
-                <Text style={[styles.tableCell, { width: "20%" }]}>
-                  APLICACIONES DE IoT
-                </Text>
-                <Text style={[styles.tableCell, { width: "10%" }]}>21</Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  justificaciones presentadas
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  acciones definidas
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  evidencias presentadas
-                </Text>
-                <Text style={[styles.tableCell, { width: "15%" }]}>
-                  Pendiente
-                </Text>
-              </View>
-            </>
+          {/* Filas de datos reales */}
+          {Array.from(seguimientosPorAsignatura.entries()).map(
+            ([asignatura, seguimientosAsignatura], indexAsignatura) => {
+              // Obtener detalles de la asignatura (unidades, temas, semanas programadas)
+              const detallesAsignatura = seguimientosAsignatura.flatMap(
+                (s) => s.detalles || []
+              );
+
+              // Si no hay detalles, crear una fila básica
+              if (detallesAsignatura.length === 0) {
+                return (
+                  <View
+                    key={`${asignatura}-${indexAsignatura}`}
+                    style={styles.tableRow}
+                  >
+                    <Text style={[styles.tableCell, { width: "10%" }]}>
+                      {indexAsignatura + 1}
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "20%" }]}>
+                      {asignatura}
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "10%" }]}>
+                      {semanasCuatrimestre}
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "15%" }]}>
+                      Sin justificación
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "15%" }]}>
+                      Sin acciones
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "15%" }]}>
+                      Sin evidencia
+                    </Text>
+                    <Text style={[styles.tableCell, { width: "15%" }]}>
+                      {seguimientosAsignatura[0]?.estado ===
+                      EstadoSeguimiento.REVISADO
+                        ? "Revisado"
+                        : "Pendiente"}
+                    </Text>
+                  </View>
+                );
+              }
+
+              // Si hay detalles, mostrar cada tema como una fila
+              return detallesAsignatura.map((detalle, indexDetalle) => (
+                <View
+                  key={`${asignatura}-${indexAsignatura}-${indexDetalle}`}
+                  style={styles.tableRow}
+                >
+                  <Text style={[styles.tableCell, { width: "10%" }]}>
+                    {indexDetalle + 1}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "20%" }]}>
+                    {detalle.tema || asignatura}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "10%" }]}>
+                    {detalle.semanaTerminada || ""}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>
+                    {detalle.justificacion || "Sin justificación"}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>
+                    {detalle.acciones || "Sin acciones"}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>
+                    {detalle.evidencias || "Sin evidencia"}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>
+                    {seguimientosAsignatura[0]?.estado ===
+                    EstadoSeguimiento.REVISADO
+                      ? "Revisado"
+                      : "Pendiente"}
+                  </Text>
+                </View>
+              ));
+            }
           )}
         </View>
 
@@ -438,7 +507,9 @@ const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
         <View style={styles.footer}>
           <Text style={styles.footerLeft}>F01PEFA04.00</Text>
           <View style={styles.footerRight}>
-            <Text>Fecha revisión: 05/07/2024</Text>
+            <Text>
+              Fecha revisión: {new Date().toLocaleDateString("es-ES")}
+            </Text>
             <Text>Hoja 1 de 1</Text>
             <Text>Rev. 00</Text>
           </View>
