@@ -87,7 +87,7 @@ export function Modal({
           </DialogFooter>
         )}
         
-        {!footer && showCloseButton && (
+        {!footer && showCloseButton && !title && (
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>
               Cerrar

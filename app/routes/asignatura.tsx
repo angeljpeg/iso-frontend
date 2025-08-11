@@ -13,8 +13,12 @@ import { useModal } from "../hooks/use-modal";
 import { useModalContext } from "../contexts/modal-context";
 import { useAuthStore } from "../store/auth";
 import type { Tema } from "../types/temas";
-import { CrearSeguimientoModal } from "~/components/ui/modals/crear-seguimiento-modal";
-import { AgregarDetalleModal } from "~/components/ui/modals/agregar-detalle-modal";
+import {
+  CrearSeguimientoModal,
+  AgregarDetalleModal,
+  SeleccionTipoModal,
+  CrearAsesoriaModal,
+} from "~/components/ui/modals";
 
 export default function AsignaturaPage() {
   const { asignaturaId } = useParams<{ asignaturaId: string }>();
@@ -60,6 +64,11 @@ export default function AsignaturaPage() {
   console.log("seguimientos: ", seguimientos);
   // Modal hooks
   const {
+    isOpen: isSeleccionOpen,
+    openModal: openSeleccion,
+    closeModal: closeSeleccion,
+  } = useModal();
+  const {
     isOpen: isCrearOpen,
     openModal: openCrear,
     closeModal: closeCrear,
@@ -68,6 +77,11 @@ export default function AsignaturaPage() {
     isOpen: isDetalleOpen,
     openModal: openDetalle,
     closeModal: closeDetalleBase,
+  } = useModal();
+  const {
+    isOpen: isAsesoriaOpen,
+    openModal: openAsesoria,
+    closeModal: closeAsesoria,
   } = useModal();
 
   // Función personalizada para cerrar el modal con limpieza
@@ -104,6 +118,11 @@ export default function AsignaturaPage() {
     if (!usuario) return;
 
     setSelectedTema(tema);
+    openSeleccion();
+  };
+
+  const handleSeguimientoSelected = () => {
+    closeSeleccion();
 
     if (isCoordinador) {
       openCrear();
@@ -117,7 +136,7 @@ export default function AsignaturaPage() {
 
             // Buscar si ya existe un detalle para este tema
             const detalleDelTema = seguimiento.detalles?.find(
-              (detalle: any) => detalle.tema === tema.nombre
+              (detalle: any) => detalle.tema === selectedTema?.nombre
             );
 
             if (detalleDelTema) {
@@ -127,7 +146,10 @@ export default function AsignaturaPage() {
             } else {
               // Si no existe, limpiar para crear nuevo
               setDetalleExistente(null);
-              console.log("📤 Creando nuevo detalle para tema:", tema.nombre);
+              console.log(
+                "📤 Creando nuevo detalle para tema:",
+                selectedTema?.nombre
+              );
             }
 
             openDetalle();
@@ -144,6 +166,11 @@ export default function AsignaturaPage() {
         showAlert("Error al verificar seguimientos");
       }
     }
+  };
+
+  const handleAsesoriaSelected = () => {
+    closeSeleccion();
+    openAsesoria();
   };
 
   const handleSeguimientoCreated = () => {
@@ -182,6 +209,11 @@ export default function AsignaturaPage() {
     }
 
     closeDetalle();
+  };
+
+  const handleAsesoriaCreated = () => {
+    showAlert("Asesoría creada correctamente");
+    closeAsesoria();
   };
 
   // Estados de carga combinados
@@ -344,6 +376,14 @@ export default function AsignaturaPage() {
       </div>
 
       {/* Modales */}
+      <SeleccionTipoModal
+        isOpen={isSeleccionOpen}
+        onClose={closeSeleccion}
+        tema={selectedTema}
+        onSeguimientoSelected={handleSeguimientoSelected}
+        onAsesoriaSelected={handleAsesoriaSelected}
+      />
+
       {isCoordinador && (
         <CrearSeguimientoModal
           isOpen={isCrearOpen}
@@ -364,6 +404,14 @@ export default function AsignaturaPage() {
           onDetalleCreated={handleDetalleCreated}
         />
       )}
+
+      <CrearAsesoriaModal
+        isOpen={isAsesoriaOpen}
+        onClose={closeAsesoria}
+        tema={selectedTema}
+        cargaAcademicaId={cargaAcademica?.id || ""}
+        onAsesoriaCreated={handleAsesoriaCreated}
+      />
     </DashboardLayout>
   );
 }
