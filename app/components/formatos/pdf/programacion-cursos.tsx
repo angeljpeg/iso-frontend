@@ -5,7 +5,6 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
   Image,
 } from "@react-pdf/renderer";
 import type { SeguimientoCurso } from "~/types/programacion-curso";
@@ -333,6 +332,10 @@ const ProgramacionCursosDocument: React.FC<GeneratePDFOptions> = ({
             </Text>
             <Text style={styles.subtitle}>Dirección de la carrera de:</Text>
             <Text style={styles.programacionText}>
+              {primerSeguimiento?.cargaAcademica?.carrera ||
+                "Tecnologías de la Información y Comunicación"}
+            </Text>
+            <Text style={styles.subtitle}>
               Programación y seguimiento del curso
             </Text>
           </View>

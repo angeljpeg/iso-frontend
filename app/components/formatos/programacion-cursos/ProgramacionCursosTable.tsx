@@ -19,6 +19,7 @@ import type {
 import { SeguimientoDetailsModal } from "./SeguimientoDetailsModal";
 import { SeguimientoEditModal } from "./SeguimientoEditModal";
 import { SeguimientoDeleteModal } from "./SeguimientoDeleteModal";
+import { PDFDownloadButton } from "../pdf/PDFDownloadButton";
 
 interface ProgramacionCursosTableProps {
   seguimientos: SeguimientoCurso[];
@@ -71,38 +72,6 @@ export function ProgramacionCursosTable({
   const handleDelete = (seguimiento: SeguimientoCurso) => {
     setSelectedSeguimiento(seguimiento);
     setModalType("delete");
-  };
-
-  const handleExportPDF = async (seguimiento: SeguimientoCurso) => {
-    try {
-      // Importar dinámicamente para evitar errores si no está instalado
-      const { generateProgramacionCursosPDF } = await import(
-        "../pdf/programacion-cursos"
-      );
-
-      // Generar PDF con el seguimiento individual
-      generateProgramacionCursosPDF({
-        seguimientos: [seguimiento],
-        titulo: `Seguimiento de Curso - ${
-          seguimiento.cargaAcademica?.asignatura || "N/A"
-        }`,
-        filtros: {
-          estado: seguimiento.estado,
-          cuatrimestreId: seguimiento.cuatrimestre?.id,
-          profesorId: seguimiento.cargaAcademica?.profesorId,
-          carrera: seguimiento.cargaAcademica?.carrera,
-        },
-      });
-    } catch (error) {
-      console.error("Error al generar PDF:", error);
-
-      // Si no está instalado jspdf, mostrar mensaje de instalación
-      if (error instanceof Error && error.message.includes("jspdf")) {
-        alert("Para generar PDFs, instala la dependencia: npm install jspdf");
-      } else {
-        alert("Error al generar el PDF");
-      }
-    }
   };
 
   const closeModal = () => {
@@ -297,14 +266,12 @@ export function ProgramacionCursosTable({
                       </>
                     )}
 
-                    <Button
-                      variant="outline"
+                    <PDFDownloadButton
+                      seguimiento={seguimiento}
                       size="sm"
-                      onClick={() => handleExportPDF(seguimiento)}
+                      variant="outline"
                       className="h-8 w-8 p-0"
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    />
                   </div>
                 </td>
               </tr>
