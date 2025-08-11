@@ -46,6 +46,19 @@ import { API_BASE_URL } from "./api-config";
 const PROGRAMACION_CURSO_URL = `${API_BASE_URL}/programacion-seguimiento-curso`;
 
 // ==========================================
+// NOTA IMPORTANTE SOBRE PAGINACIÓN
+// ==========================================
+// Todos los endpoints GET de seguimientos devuelven respuestas paginadas con la siguiente estructura:
+// {
+//   data: SeguimientoCurso[],     // Array de elementos
+//   total: number,                 // Total de elementos disponibles
+//   page: number,                  // Página actual
+//   limit: number,                 // Elementos por página
+//   totalPages: number             // Total de páginas
+// }
+// ==========================================
+
+// ==========================================
 // SERVICIOS PARA SEGUIMIENTO CURSO
 // ==========================================
 
@@ -54,16 +67,27 @@ export const getAllSeguimientosCurso = async (
   request: GetSeguimientosCursoRequest
 ): Promise<GetSeguimientosCursoResponse> => {
   try {
-    const { token, ...rest } = request;
+    const {
+      token,
+      page,
+      limit,
+      estado,
+      cuatrimestreId,
+      profesorId,
+      carrera,
+      search,
+    } = request;
 
-    const params = new URLSearchParams(
-      Object.entries(rest).filter(([, v]) => v !== undefined) as [
-        string,
-        string
-      ][]
-    );
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+    if (estado) params.append("estado", estado);
+    if (cuatrimestreId) params.append("cuatrimestreId", cuatrimestreId);
+    if (profesorId) params.append("profesorId", profesorId);
+    if (carrera) params.append("carrera", carrera);
+    if (search) params.append("search", search);
 
-    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/seguimientos?${params}`;
+    const FETCH_URL = `${PROGRAMACION_CURSO_URL}?${params}`;
 
     const response = await fetch(FETCH_URL, {
       method: "GET",
@@ -93,16 +117,13 @@ export const getSeguimientoCursoById = async (
   try {
     const { token, id } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -122,8 +143,13 @@ export const getSeguimientosByCargaAcademica = async (
   request: GetSeguimientosByCargaAcademicaRequest
 ): Promise<GetSeguimientosByCargaAcademicaResponse> => {
   try {
-    const { token, cargaAcademicaId } = request;
-    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/cargaAcademica/${cargaAcademicaId}`;
+    const { token, cargaAcademicaId, page, limit } = request;
+
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+
+    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/cargaAcademica/${cargaAcademicaId}?${params}`;
     console.log("FETCH_URL: ", FETCH_URL);
 
     const response = await fetch(FETCH_URL, {
@@ -152,16 +178,15 @@ export const getSeguimientosByProfesor = async (
   request: GetSeguimientosByProfesorRequest
 ): Promise<GetSeguimientosByProfesorResponse> => {
   try {
-    const { token, ...rest } = request;
+    const { token, profesorId, page, limit, estado, cuatrimestreId } = request;
 
-    const params = new URLSearchParams(
-      Object.entries(rest).filter(([, v]) => v !== undefined) as [
-        string,
-        string
-      ][]
-    );
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+    if (estado) params.append("estado", estado);
+    if (cuatrimestreId) params.append("cuatrimestreId", cuatrimestreId);
 
-    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/seguimientos/profesor?${params}`;
+    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/profesor/${profesorId}?${params}`;
 
     const response = await fetch(FETCH_URL, {
       method: "GET",
@@ -189,16 +214,15 @@ export const getSeguimientosByCuatrimestre = async (
   request: GetSeguimientosByCuatrimestreRequest
 ): Promise<GetSeguimientosByCuatrimestreResponse> => {
   try {
-    const { token, ...rest } = request;
+    const { token, cuatrimestreId, page, limit, estado, carrera } = request;
 
-    const params = new URLSearchParams(
-      Object.entries(rest).filter(([, v]) => v !== undefined) as [
-        string,
-        string
-      ][]
-    );
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+    if (estado) params.append("estado", estado);
+    if (carrera) params.append("carrera", carrera);
 
-    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/seguimientos/cuatrimestre?${params}`;
+    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/cuatrimestre/${cuatrimestreId}?${params}`;
 
     const response = await fetch(FETCH_URL, {
       method: "GET",
@@ -228,16 +252,13 @@ export const getSeguimientoEstado = async (
   try {
     const { token, id } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${id}/estado`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}/estado`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -298,17 +319,14 @@ export const updateSeguimientoCurso = async (
   try {
     const { token, id, data } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -330,17 +348,14 @@ export const updateSeguimientoEstado = async (
   try {
     const { token, id, ...data } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${id}/estado`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}/estado`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -362,16 +377,13 @@ export const deleteSeguimientoCurso = async (
   try {
     const { token, id } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -398,7 +410,7 @@ export const getSeguimientoDetalles = async (
     const { token, seguimientoCursoId } = request;
 
     const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/${seguimientoCursoId}/detalles`,
+      `${PROGRAMACION_CURSO_URL}/${seguimientoCursoId}/detalles`,
       {
         method: "GET",
         headers: {
@@ -503,16 +515,13 @@ export const deleteSeguimientoDetalle = async (
   try {
     const { token, id } = request;
 
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/seguimientos/detalles/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${PROGRAMACION_CURSO_URL}/detalles/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -531,164 +540,59 @@ export const deleteSeguimientoDetalle = async (
 // SERVICIOS PARA NOTIFICACIONES
 // ==========================================
 
-// Obtener notificaciones
+// Obtener notificaciones - TEMPORALMENTE DESHABILITADO
 export const getNotificaciones = async (
   request: GetNotificacionesRequest
 ): Promise<GetNotificacionesResponse> => {
-  try {
-    const { token, ...rest } = request;
-
-    const params = new URLSearchParams(
-      Object.entries(rest).filter(([, v]) => v !== undefined) as [
-        string,
-        string
-      ][]
-    );
-
-    const FETCH_URL = `${PROGRAMACION_CURSO_URL}/notificaciones?${params}`;
-
-    const response = await fetch(FETCH_URL, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Error fetching notificaciones: ${response.status} ${response.statusText}`
-      );
-    }
-
-    return (await response.json()) as GetNotificacionesResponse;
-  } catch (error) {
-    console.error("Error fetching notificaciones:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
-// Crear una nueva notificación
+// Crear una nueva notificación - TEMPORALMENTE DESHABILITADO
 export const createNotificacion = async (
   request: CreateNotificacionRequest
 ): Promise<CreateNotificacionResponse> => {
-  try {
-    const { token, data } = request;
-
-    const response = await fetch(`${PROGRAMACION_CURSO_URL}/notificaciones`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Error creating notificacion: ${response.status} ${response.statusText}`
-      );
-    }
-
-    return (await response.json()) as CreateNotificacionResponse;
-  } catch (error) {
-    console.error("Error creating notificacion:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
-// Actualizar una notificación
+// Actualizar una notificación - TEMPORALMENTE DESHABILITADO
 export const updateNotificacion = async (
   request: UpdateNotificacionRequest
 ): Promise<UpdateNotificacionResponse> => {
-  try {
-    const { token, id, data } = request;
-
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/notificaciones/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Error updating notificacion: ${response.status} ${response.statusText}`
-      );
-    }
-
-    return (await response.json()) as UpdateNotificacionResponse;
-  } catch (error) {
-    console.error("Error updating notificacion:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
-// Eliminar una notificación
+// Eliminar una notificación - TEMPORALMENTE DESHABILITADO
 export const deleteNotificacion = async (
   request: DeleteNotificacionRequest
 ): Promise<DeleteNotificacionResponse> => {
-  try {
-    const { token, id } = request;
-
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/notificaciones/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Error deleting notificacion: ${response.status} ${response.statusText}`
-      );
-    }
-
-    return (await response.json()) as DeleteNotificacionResponse;
-  } catch (error) {
-    console.error("Error deleting notificacion:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
-// Marcar notificación como leída
+// Marcar notificación como leída - TEMPORALMENTE DESHABILITADO
 export const marcarNotificacionLeida = async (
   request: MarcarNotificacionLeidaRequest
 ): Promise<MarcarNotificacionLeidaResponse> => {
-  try {
-    const { token, id } = request;
-
-    const response = await fetch(
-      `${PROGRAMACION_CURSO_URL}/notificaciones/${id}/marcar-leida`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Error marcando notificacion como leida: ${response.status} ${response.statusText}`
-      );
-    }
-
-    return (await response.json()) as MarcarNotificacionLeidaResponse;
-  } catch (error) {
-    console.error("Error marcando notificacion como leida:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
 // ==========================================
@@ -706,13 +610,16 @@ export const getSeguimientosPaginated = async (
   carrera?: string,
   search?: string
 ): Promise<GetSeguimientosCursoResponse> => {
-  const params: any = { page, limit, token };
-
-  if (estado) params.estado = estado;
-  if (cuatrimestreId) params.cuatrimestreId = cuatrimestreId;
-  if (profesorId) params.profesorId = profesorId;
-  if (carrera) params.carrera = carrera;
-  if (search) params.search = search;
+  const params: GetSeguimientosCursoRequest = {
+    page,
+    limit,
+    token,
+    estado,
+    cuatrimestreId,
+    profesorId,
+    carrera,
+    search,
+  };
 
   return getAllSeguimientosCurso(params);
 };
@@ -726,17 +633,19 @@ export const searchSeguimientos = async (
   page?: number,
   limit?: number
 ): Promise<GetSeguimientosCursoResponse> => {
-  const params: any = { search: searchTerm, token };
-
-  if (estado) params.estado = estado;
-  if (cuatrimestreId) params.cuatrimestreId = cuatrimestreId;
-  if (page) params.page = page;
-  if (limit) params.limit = limit;
+  const params: GetSeguimientosCursoRequest = {
+    search: searchTerm,
+    token,
+    estado,
+    cuatrimestreId,
+    page,
+    limit,
+  };
 
   return getAllSeguimientosCurso(params);
 };
 
-// Función para obtener notificaciones del usuario
+// Función para obtener notificaciones del usuario - TEMPORALMENTE DESHABILITADO
 export const getNotificacionesUsuario = async (
   usuarioId: string,
   token: string,
@@ -744,21 +653,23 @@ export const getNotificacionesUsuario = async (
   limit: number = 10,
   estado?: string
 ): Promise<GetNotificacionesResponse> => {
-  const params: any = { usuarioId, token, page, limit };
-
-  if (estado) params.estado = estado;
-
-  return getNotificaciones(params);
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
 
-// Función para obtener notificaciones de un seguimiento específico
+// Función para obtener notificaciones de un seguimiento específico - TEMPORALMENTE DESHABILITADO
 export const getNotificacionesSeguimiento = async (
   seguimientoCursoId: string,
   token: string,
   page: number = 1,
   limit: number = 10
 ): Promise<GetNotificacionesResponse> => {
-  const params: any = { seguimientoCursoId, token, page, limit };
-
-  return getNotificaciones(params);
+  // TODO: Implementar cuando el backend tenga endpoints de notificaciones
+  console.warn("Funcionalidad de notificaciones temporalmente deshabilitada");
+  throw new Error(
+    "Funcionalidad de notificaciones no implementada en el backend"
+  );
 };
