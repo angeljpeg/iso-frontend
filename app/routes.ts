@@ -37,4 +37,13 @@ export default [
     "coordinador/asignacion-tutorias",
     "routes/coordinador/asignacion-tutorias.tsx"
   ),
+
+  // FORMATOS
+  route("formatos/asesorias", "routes/formatos/asesorias.tsx"),
+  route("formatos/estadias", "routes/formatos/estadias.tsx"),
+  route("formatos/tutorias", "routes/formatos/tutorias.tsx"),
+  route(
+    "formatos/programacion-cursos",
+    "routes/formatos/programacion-cursos.tsx"
+  ),
 ] satisfies RouteConfig;
