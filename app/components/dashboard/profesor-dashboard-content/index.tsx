@@ -45,7 +45,7 @@ export function ProfesorDashboardContent() {
   };
 
   const handleEstadiaClick = (estadiaId: string) => {
-    navigate(`/estadias/${estadiaId}`);
+    navigate(`/profesor/estadias/${estadiaId}`);
   };
 
   const handleRetryCargas = () => {

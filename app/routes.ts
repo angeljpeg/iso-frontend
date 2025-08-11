@@ -13,6 +13,11 @@ export default [
   // PROFESOR
   route("asignatura/:asignaturaId", "routes/asignatura.tsx"),
   route("grupo/:grupoId", "routes/grupo.tsx"),
+  route("profesor/estadias/:estadiaId", "routes/profesor/estadias/index.tsx"),
+  route(
+    "profesor/estadias/progreso-alumno/:estadiaAlumnoId",
+    "routes/profesor/estadias/progreso-alumno.tsx"
+  ),
 
   // COORDINADOR
   route(
