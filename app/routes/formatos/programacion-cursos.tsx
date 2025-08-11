@@ -10,6 +10,7 @@ import {
 } from "~/components/formatos/programacion-cursos";
 import { Button } from "~/components/ui/Button";
 import { RefreshCw, FileText, Filter as FilterIcon } from "lucide-react";
+import { PDFDownloadLinkComponent } from "~/components/formatos/pdf/PDFDownloader";
 
 export default function ProgramacionCursosPage() {
   const { usuario } = useAuthStore();
@@ -208,6 +209,14 @@ export default function ProgramacionCursosPage() {
                 />
                 Actualizar
               </Button>
+
+              <PDFDownloadLinkComponent
+                seguimientos={seguimientosArray}
+                titulo="Programación y Seguimiento de Cursos - Reporte Completo"
+                filtros={filters}
+              >
+                Exportar PDF
+              </PDFDownloadLinkComponent>
             </div>
           </div>
         </div>

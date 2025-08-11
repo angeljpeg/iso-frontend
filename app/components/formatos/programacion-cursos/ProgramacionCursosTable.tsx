@@ -75,66 +75,33 @@ export function ProgramacionCursosTable({
 
   const handleExportPDF = async (seguimiento: SeguimientoCurso) => {
     try {
-      // TODO: Implementar exportación a PDF
-      // Por ahora, mostramos un mensaje de funcionalidad en desarrollo
-      alert("Funcionalidad de exportación a PDF en desarrollo");
+      // Importar dinámicamente para evitar errores si no está instalado
+      const { generateProgramacionCursosPDF } = await import(
+        "../pdf/programacion-cursos"
+      );
 
-      // Código comentado para futura implementación:
-      // const { jsPDF } = await import("jspdf");
-      // const doc = new jsPDF();
-      //
-      // // Título
-      // doc.setFontSize(20);
-      // doc.text("Seguimiento de Curso", 20, 20);
-      //
-      // // Información básica
-      // doc.setFontSize(12);
-      // doc.text(
-      //   `Profesor: ${seguimiento.cargaAcademica.profesor?.nombre} ${seguimiento.cargaAcademica.profesor?.apellido}`,
-      //   20,
-      //   40
-      // );
-      // doc.text(
-      //   `Asignatura: ${seguimiento.cargaAcademica.asignatura}`,
-      //   20,
-      //   50
-      // );
-      // doc.text(`Cuatrimestre: ${seguimiento.cuatrimestre.nombreGenerado}`, 20, 60);
-      // doc.text(`Estado: ${seguimiento.estado}`, 20, 70);
-      //
-      // // Detalles
-      // if (seguimiento.detalles.length > 0) {
-      //   doc.text("Detalles del Seguimiento:", 20, 90);
-      //   let yPosition = 100;
-      //
-      //   seguimiento.detalles.forEach((detalle, index) => {
-      //     if (yPosition > 250) {
-      //       doc.addPage();
-      //       yPosition = 20;
-      //     }
-      //
-      //     doc.text(`Tema ${index + 1}: ${detalle.tema}`, 25, yPosition);
-      //     doc.text(`Semana: ${detalle.semanaTerminada}`, 25, yPosition + 8);
-      //     doc.text(`Estado: ${detalle.estadoAvance}`, 25, yPosition + 16);
-      //
-      //     if (detalle.observaciones) {
-      //       doc.text(
-      //         `Observaciones: ${detalle.observaciones}`,
-      //         25,
-      //         yPosition + 24
-      //       );
-      //       yPosition += 32;
-      //     } else {
-      //       yPosition += 24;
-      //     }
-      //   });
-      // }
-      //
-      // // Guardar PDF
-      // doc.save(`seguimiento-${seguimiento.id}.pdf`);
+      // Generar PDF con el seguimiento individual
+      generateProgramacionCursosPDF({
+        seguimientos: [seguimiento],
+        titulo: `Seguimiento de Curso - ${
+          seguimiento.cargaAcademica?.asignatura || "N/A"
+        }`,
+        filtros: {
+          estado: seguimiento.estado,
+          cuatrimestreId: seguimiento.cuatrimestre?.id,
+          profesorId: seguimiento.cargaAcademica?.profesorId,
+          carrera: seguimiento.cargaAcademica?.carrera,
+        },
+      });
     } catch (error) {
       console.error("Error al generar PDF:", error);
-      alert("Error al generar el PDF");
+
+      // Si no está instalado jspdf, mostrar mensaje de instalación
+      if (error instanceof Error && error.message.includes("jspdf")) {
+        alert("Para generar PDFs, instala la dependencia: npm install jspdf");
+      } else {
+        alert("Error al generar el PDF");
+      }
     }
   };
 
