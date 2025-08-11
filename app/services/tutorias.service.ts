@@ -107,7 +107,8 @@ export const tutoriasService = {
   async addDetalle(
     detalle: CreateTutoriaDetalleDto,
     token: string
-  ): Promise<TutoriaResponse> {
+  ): Promise<any> {
+    // Cambiar a any para manejar mejor la respuesta
     const response = await fetch(
       `${API_BASE_URL}${BASE_URL}/${detalle.tutoriaId}/detalles`,
       {
@@ -124,7 +125,9 @@ export const tutoriasService = {
       throw new Error(`Error al agregar detalle: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log("Respuesta del backend addDetalle:", data);
+    return data;
   },
 
   // Actualizar una tutoria

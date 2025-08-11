@@ -267,10 +267,36 @@ export default function GrupoPage() {
 
       console.log("Respuesta de agregar detalle:", response);
 
-      // Actualizar la tutoría en el estado local
-      setTutorias((prev) =>
-        prev.map((t) => (t.id === tutoriaSeleccionada.id ? response.data : t))
-      );
+      // Verificar que la respuesta sea válida antes de actualizar
+      if (response && response.id) {
+        console.log("Detalle creado exitosamente:", response);
+
+        // En lugar de actualizar toda la tutoría, solo agregar el detalle al estado local
+        // o recargar las tutorías para obtener la información actualizada
+        await cargarTutorias(); // Recargar las tutorías para obtener datos actualizados
+      } else {
+        console.warn("Respuesta inesperada del backend:", response);
+      }
+
+      // Log del estado actual de las tutorías para debug
+      console.log("Estado actual de tutorias:", tutorias);
+      console.log("tutoriasSeguras:", tutoriasSeguras);
+
+      // Verificar que las tutorías existan antes de continuar
+      if (!tutorias || !Array.isArray(tutorias)) {
+        console.warn("Estado de tutorías no válido, recargando...");
+        await cargarTutorias();
+      }
+
+      // Verificar que la tutoría seleccionada tenga todas las propiedades necesarias
+      if (
+        tutoriaSeleccionada &&
+        (!tutoriaSeleccionada.fecha || !tutoriaSeleccionada.id)
+      ) {
+        console.warn("Tutoría seleccionada incompleta:", tutoriaSeleccionada);
+        // Recargar para obtener datos completos
+        await cargarTutorias();
+      }
 
       setShowAgregarDetalleModal(false);
       setTutoriaSeleccionada(null);
@@ -574,6 +600,7 @@ export default function GrupoPage() {
             }}
             onSubmit={handleAgregarDetalle}
             isLoading={isSubmitting}
+            tutoriaId={tutoriaSeleccionada.id}
           />
         )}
       </div>

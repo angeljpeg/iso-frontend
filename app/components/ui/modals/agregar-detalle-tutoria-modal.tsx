@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../Button";
 import { FormInput } from "../forms/FormInput";
 import { FormCheckbox } from "../forms/FormCheckbox";
@@ -16,6 +16,7 @@ interface AgregarDetalleTutoriaModalProps {
   onClose: () => void;
   onSubmit: (detalle: CreateTutoriaDetalleDto) => void;
   isLoading?: boolean;
+  tutoriaId: number; // Agregar tutoriaId como prop obligatoria
 }
 
 export function AgregarDetalleTutoriaModal({
@@ -23,6 +24,7 @@ export function AgregarDetalleTutoriaModal({
   onClose,
   onSubmit,
   isLoading = false,
+  tutoriaId,
 }: AgregarDetalleTutoriaModalProps) {
   const [formData, setFormData] = useState<CreateTutoriaDetalleDto>({
     nombreAlumno: "",
@@ -31,8 +33,17 @@ export function AgregarDetalleTutoriaModal({
     fueAtendido: false,
     presentoMejoria: false,
     causoBaja: false,
-    tutoriaId: 0, // Se establecerá cuando se cree la tutoria
+    tutoriaId: tutoriaId, // Usar el tutoriaId de las props
   });
+
+  // Actualizar tutoriaId cuando cambie la prop
+  useEffect(() => {
+    console.log("Modal recibió tutoriaId:", tutoriaId);
+    setFormData((prev) => ({
+      ...prev,
+      tutoriaId: tutoriaId,
+    }));
+  }, [tutoriaId]);
 
   const handleInputChange = (
     field: keyof CreateTutoriaDetalleDto,
@@ -67,6 +78,31 @@ export function AgregarDetalleTutoriaModal({
     });
   };
 
+  // Función para limpiar los datos del formulario
+  const limpiarDatosFormulario = () => {
+    // Crear un objeto completamente nuevo sin referencias
+    const datosLimpios: CreateTutoriaDetalleDto = {
+      nombreAlumno: String(formData.nombreAlumno || "").trim(),
+      vulnerabilidad: formData.vulnerabilidad,
+      areaCanalizacion: formData.areaCanalizacion,
+      fueAtendido: Boolean(formData.fueAtendido),
+      presentoMejoria: Boolean(formData.presentoMejoria),
+      causoBaja: Boolean(formData.causoBaja),
+      tutoriaId: formData.tutoriaId,
+    };
+    
+    // Solo agregar campos opcionales si tienen valor y no son undefined
+    if (formData.causaNoAtencion && formData.causaNoAtencion !== undefined) {
+      datosLimpios.causaNoAtencion = formData.causaNoAtencion;
+    }
+    
+    if (formData.causaBaja && formData.causaBaja !== undefined) {
+      datosLimpios.causaBaja = formData.causaBaja;
+    }
+    
+    return datosLimpios;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,6 +122,12 @@ export function AgregarDetalleTutoriaModal({
       return;
     }
 
+    // Validar que el tutoriaId sea válido
+    if (!formData.tutoriaId || formData.tutoriaId === 0) {
+      alert("Error: ID de tutoria no válido");
+      return;
+    }
+
     // Validar que si no fue atendido, debe tener causa de no atención
     if (!formData.fueAtendido && !formData.causaNoAtencion) {
       alert("Si el alumno no fue atendido, debe especificar la causa");
@@ -98,14 +140,28 @@ export function AgregarDetalleTutoriaModal({
       return;
     }
 
-    console.log("Estado del formulario antes del envío:", formData);
+    // Limpiar los datos antes de enviar para evitar referencias circulares
+    const datosLimpios = limpiarDatosFormulario();
+    
+    console.log("Estado del formulario antes del envío:", datosLimpios);
     console.log(
       "nombreAlumno:",
-      formData.nombreAlumno,
+      datosLimpios.nombreAlumno,
       "Tipo:",
-      typeof formData.nombreAlumno
+      typeof datosLimpios.nombreAlumno
     );
-    onSubmit(formData);
+    console.log("Datos limpios a enviar:", {
+      nombreAlumno: datosLimpios.nombreAlumno,
+      vulnerabilidad: datosLimpios.vulnerabilidad,
+      areaCanalizacion: datosLimpios.areaCanalizacion,
+      fueAtendido: datosLimpios.fueAtendido,
+      presentoMejoria: datosLimpios.presentoMejoria,
+      causoBaja: datosLimpios.causoBaja,
+      tutoriaId: datosLimpios.tutoriaId,
+      causaNoAtencion: datosLimpios.causaNoAtencion,
+      causaBaja: datosLimpios.causaBaja,
+    });
+    onSubmit(datosLimpios);
   };
 
   const handleClose = () => {
@@ -116,7 +172,7 @@ export function AgregarDetalleTutoriaModal({
       fueAtendido: false,
       presentoMejoria: false,
       causoBaja: false,
-      tutoriaId: 0,
+      tutoriaId: tutoriaId,
     });
     onClose();
   };
