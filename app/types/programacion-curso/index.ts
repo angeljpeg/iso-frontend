@@ -130,3 +130,6 @@ export interface UpdateSeguimientoDetalleDto {
   evidencias?: string;
   retraso?: boolean;
 }
+
+// Exportar tipos de reportes
+export * from "./reportes";
