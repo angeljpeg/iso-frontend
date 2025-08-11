@@ -1,146 +1,4 @@
-// Interfaces para los reportes de asesorías
-
-export interface ReporteAsesoriaBase {
-  totalAsesorias: number;
-  totalAlumnosAtendidos: number;
-  totalHorasAsesorias: number;
-}
-
-export interface ResumenPorCarrera {
-  totalAsesorias: number;
-  totalAlumnos: number;
-  totalHoras: number;
-  promedioAlumnos: string;
-  promedioDuracion: string;
-  asignaturas: Record<string, number>;
-  profesores: Record<string, number>;
-}
-
-export interface ResumenPorProfesor {
-  totalAsesorias: number;
-  totalAlumnos: number;
-  totalHoras: number;
-  promedioAlumnos: string;
-  promedioDuracion: string;
-  carreras: Record<string, number>;
-  asignaturas: Record<string, number>;
-  grupos: Record<string, number>;
-}
-
-export interface ResumenPorTema {
-  totalAsesorias: number;
-  totalAlumnos: number;
-  totalHoras: number;
-  promedioAlumnos: string;
-  promedioDuracion: string;
-  carreras: Record<string, number>;
-  asignaturas: Record<string, number>;
-  profesores: Record<string, number>;
-}
-
-export interface MetricasGenerales {
-  totalAlumnosAtendidos: number;
-  totalHorasAsesorias: number;
-  promedioAlumnosPorAsesoria?: string;
-  promedioDuracionPorAsesoria?: string;
-  promedioAsesoriasPorProfesor?: string;
-  temasUnicos?: number;
-}
-
-export interface AsesoriaReporte {
-  id: string;
-  temaAsesoria: string;
-  fecha: string;
-  numeroAlumnos: number;
-  nombreAlumno: string;
-  duracionAsesoria: number;
-  cargaAcademica: {
-    id: string;
-    carrera: string;
-    asignatura: string;
-    profesor: {
-      id: string;
-      nombre: string;
-      apellido: string;
-      email: string;
-    };
-    grupo: {
-      id: string;
-      nombreGenerado: string;
-      carrera: string;
-      cuatrimestre: number;
-      numeroGrupo: number;
-    };
-  };
-  cuatrimestre: {
-    id: string;
-    fechaInicio: string;
-    fechaFin: string;
-    nombreGenerado: string;
-    activo: boolean;
-  };
-}
-
-// Reporte General
-export interface ReporteGeneralAsesorias extends ReporteAsesoriaBase {
-  resumenPorCarrera: Record<string, number>;
-  resumenPorCuatrimestre: Record<string, number>;
-  resumenPorProfesor: Record<string, number>;
-  resumenPorTema: Record<string, number>;
-  resumenPorGrupo: Record<string, number>;
-  asesorias?: AsesoriaReporte[];
-}
-
-// Reporte por Carrera
-export interface ReporteAsesoriasPorCarrera extends ReporteAsesoriaBase {
-  resumenPorCarrera: Record<string, ResumenPorCarrera>;
-  metricasGenerales: MetricasGenerales;
-  asesorias?: AsesoriaReporte[];
-}
-
-// Reporte por Profesor
-export interface ReporteAsesoriasPorProfesor extends ReporteAsesoriaBase {
-  resumenPorProfesor: Record<string, ResumenPorProfesor>;
-  metricasGenerales: MetricasGenerales;
-  asesorias?: AsesoriaReporte[];
-}
-
-// Reporte por Tema
-export interface ReporteAsesoriasPorTema extends ReporteAsesoriaBase {
-  resumenPorTema: Record<string, ResumenPorTema>;
-  metricasGenerales: MetricasGenerales;
-  asesorias?: AsesoriaReporte[];
-}
-
-// Reporte Estadístico
-export interface ReporteEstadisticasAsesorias extends ReporteAsesoriaBase {
-  promedioAlumnosPorAsesoria: string;
-  promedioDuracionPorAsesoria: string;
-  distribucionPorCarrera: Record<string, number>;
-  distribucionPorCuatrimestre: Record<string, number>;
-  distribucionPorProfesor: Record<string, number>;
-  distribucionPorTema: Record<string, number>;
-  distribucionPorGrupo: Record<string, number>;
-  agrupaciones: {
-    porSemana?: Record<string, number>;
-    porCarrera?: Record<string, number>;
-    porProfesor?: Record<string, number>;
-    porAsignatura?: Record<string, number>;
-    porGrupo?: Record<string, number>;
-  };
-}
-
-// Reporte de Dashboard
-export interface ReporteDashboardAsesorias extends ReporteAsesoriaBase {
-  promedioAlumnosPorAsesoria: string;
-  promedioDuracionPorAsesoria: string;
-  topCarreras: Array<{ carrera: string; total: number }>;
-  topProfesores: Array<{ profesor: string; total: number }>;
-  topTemas: Array<{ tema: string; total: number }>;
-  distribucionPorCuatrimestre: Record<string, number>;
-}
-
-// Filtros para reportes
+// Tipos base para reportes de asesorías
 export interface FiltrosReporteAsesorias {
   cuatrimestreId?: string;
   profesorId?: string;
@@ -157,92 +15,171 @@ export interface FiltrosReporteAsesorias {
   incluirDetalles?: boolean;
 }
 
-export interface FiltrosReporteAsesoriasPorCarrera
-  extends FiltrosReporteAsesorias {
-  incluirMetricasPorAsignatura?: boolean;
-  incluirMetricasPorProfesor?: boolean;
+export interface FiltrosReporteAsesoriasPorCarrera extends FiltrosReporteAsesorias {
+  agruparPorCarrera?: boolean;
 }
 
-export interface FiltrosReporteAsesoriasPorProfesor
-  extends FiltrosReporteAsesorias {
-  incluirMetricasPorCarrera?: boolean;
-  incluirMetricasPorAsignatura?: boolean;
-  incluirMetricasPorGrupo?: boolean;
+export interface FiltrosReporteAsesoriasPorProfesor extends FiltrosReporteAsesorias {
+  agruparPorProfesor?: boolean;
 }
 
-export interface FiltrosReporteAsesoriasPorTema
-  extends FiltrosReporteAsesorias {
-  incluirMetricasPorCarrera?: boolean;
-  incluirMetricasPorAsignatura?: boolean;
-  incluirMetricasPorProfesor?: boolean;
+export interface FiltrosReporteAsesoriasPorTema extends FiltrosReporteAsesorias {
+  agruparPorTema?: boolean;
 }
 
-export interface FiltrosReporteEstadisticasAsesorias
-  extends FiltrosReporteAsesorias {
+export interface FiltrosReporteEstadisticasAsesorias extends FiltrosReporteAsesorias {
   agruparPorSemana?: boolean;
   agruparPorCarrera?: boolean;
   agruparPorProfesor?: boolean;
   agruparPorAsignatura?: boolean;
   agruparPorGrupo?: boolean;
-  incluirMetricasTiempo?: boolean;
-  incluirMetricasAlumnos?: boolean;
 }
 
-// Tipos de respuesta de la API
-export interface ApiResponseReporteGeneral {
-  data: ReporteGeneralAsesorias;
-  success: boolean;
-  message?: string;
+// Tipos para respuestas de reportes
+export interface ReporteAsesoriasGeneral {
+  totalAsesorias: number;
+  resumenPorCarrera: Record<string, number>;
+  resumenPorCuatrimestre: Record<string, number>;
+  resumenPorProfesor: Record<string, number>;
+  resumenPorTema: Record<string, number>;
+  resumenPorGrupo: Record<string, number>;
+  totalAlumnosAtendidos: number;
+  totalHorasAsesorias: number;
+  asesorias?: AsesoriaReporte[];
 }
 
-export interface ApiResponseReportePorCarrera {
-  data: ReporteAsesoriasPorCarrera;
-  success: boolean;
-  message?: string;
+export interface ReporteAsesoriasPorCarrera {
+  totalAsesorias: number;
+  resumenPorCarrera: Record<string, ResumenDetalladoCarrera>;
+  metricasGenerales: MetricasGenerales;
+  asesorias?: AsesoriaReporte[];
 }
 
-export interface ApiResponseReportePorProfesor {
-  data: ReporteAsesoriasPorProfesor;
-  success: boolean;
-  message?: string;
+export interface ReporteAsesoriasPorProfesor {
+  totalAsesorias: number;
+  resumenPorProfesor: Record<string, ResumenDetalladoProfesor>;
+  metricasGenerales: MetricasGenerales & {
+    promedioAsesoriasPorProfesor: string;
+  };
+  asesorias?: AsesoriaReporte[];
 }
 
-export interface ApiResponseReportePorTema {
-  data: ReporteAsesoriasPorTema;
-  success: boolean;
-  message?: string;
+export interface ReporteAsesoriasPorTema {
+  totalAsesorias: number;
+  resumenPorTema: Record<string, ResumenDetalladoTema>;
+  metricasGenerales: MetricasGenerales & {
+    temasUnicos: number;
+  };
+  asesorias?: AsesoriaReporte[];
 }
 
-export interface ApiResponseReporteEstadisticas {
-  data: ReporteEstadisticasAsesorias;
-  success: boolean;
-  message?: string;
+export interface ReporteEstadisticasAsesorias {
+  totalAsesorias: number;
+  totalAlumnosAtendidos: number;
+  totalHorasAsesorias: number;
+  promedioAlumnosPorAsesoria: string;
+  promedioDuracionPorAsesoria: string;
+  distribucionPorCarrera: Record<string, number>;
+  distribucionPorCuatrimestre: Record<string, number>;
+  distribucionPorProfesor: Record<string, number>;
+  distribucionPorTema: Record<string, number>;
+  distribucionPorGrupo: Record<string, number>;
+  agrupaciones: Record<string, any>;
 }
 
-export interface ApiResponseReporteDashboard {
-  data: ReporteDashboardAsesorias;
-  success: boolean;
-  message?: string;
+// Tipos para resúmenes detallados
+export interface ResumenDetalladoCarrera {
+  totalAsesorias: number;
+  totalAlumnos: number;
+  totalHoras: number;
+  promedioAlumnos: string;
+  promedioDuracion: string;
+  asignaturas: Record<string, number>;
+  profesores: Record<string, number>;
 }
 
-// Union type para todos los tipos de reporte
-export type TipoReporteAsesoria =
-  | "general"
-  | "por-carrera"
-  | "por-profesor"
-  | "por-tema"
-  | "estadisticas"
-  | "dashboard";
+export interface ResumenDetalladoProfesor {
+  totalAsesorias: number;
+  totalAlumnos: number;
+  totalHoras: number;
+  promedioAlumnos: string;
+  promedioDuracion: string;
+  carreras: Record<string, number>;
+  asignaturas: Record<string, number>;
+  grupos: Record<string, number>;
+}
 
-// Configuración para generación de reportes
-export interface ConfiguracionReporte {
-  tipo: TipoReporteAsesoria;
-  filtros:
-    | FiltrosReporteAsesorias
-    | FiltrosReporteAsesoriasPorCarrera
-    | FiltrosReporteAsesoriasPorProfesor
-    | FiltrosReporteAsesoriasPorTema
-    | FiltrosReporteEstadisticasAsesorias;
-  formato?: "json" | "csv" | "pdf";
-  incluirGraficos?: boolean;
+export interface ResumenDetalladoTema {
+  totalAsesorias: number;
+  totalAlumnos: number;
+  totalHoras: number;
+  promedioAlumnos: string;
+  promedioDuracion: string;
+  carreras: Record<string, number>;
+  asignaturas: Record<string, number>;
+  profesores: Record<string, number>;
+}
+
+export interface MetricasGenerales {
+  totalAlumnosAtendidos: number;
+  totalHorasAsesorias: number;
+  promedioAlumnosPorAsesoria: string;
+  promedioDuracionPorAsesoria: string;
+}
+
+// Tipo para asesorías en reportes
+export interface AsesoriaReporte {
+  id: string;
+  temaAsesoria: string;
+  fecha: string;
+  numeroAlumnos: number;
+  nombreAlumno: string;
+  duracionAsesoria: number;
+  cargaAcademica: {
+    id: string;
+    carrera: string;
+    asignatura: string;
+    profesor: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    };
+    grupo: {
+      id: string;
+      nombreGenerado: string;
+    };
+  };
+  cuatrimestre: {
+    id: string;
+    nombreGenerado: string;
+  };
+}
+
+// Tipos para reporte del dashboard
+export interface ReporteDashboardAsesorias {
+  totalAsesorias: number;
+  totalAlumnosAtendidos: number;
+  totalHorasAsesorias: number;
+  promedioDuracion: number;
+  asesoriasPorMes: Array<{
+    mes: string;
+    cantidad: number;
+    alumnos: number;
+    horas: number;
+  }>;
+  topAsignaturas: Array<{
+    nombre: string;
+    cantidad: number;
+    alumnos: number;
+    horas: number;
+  }>;
+  topProfesores: Array<{
+    nombre: string;
+    apellido: string;
+    cantidad: number;
+    alumnos: number;
+    horas: number;
+  }>;
+  distribucionPorCarrera: Record<string, number>;
+  distribucionPorCuatrimestre: Record<string, number>;
 }

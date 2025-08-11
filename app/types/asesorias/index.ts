@@ -1,9 +1,6 @@
 import { type CargaAcademica } from "../carga-academica";
-export * from "./services";
-export * from "./columns-table";
-export * from "./reportes";
 
-// Interfaces principales
+// Tipos principales de asesorías
 export interface Asesoria {
   id: string;
   temaAsesoria: string;
@@ -13,7 +10,24 @@ export interface Asesoria {
   duracionAsesoria: number;
   cargaAcademicaId: string;
   activo: boolean;
-  cargaAcademica: CargaAcademica;
+  cargaAcademica: {
+    id: string;
+    carrera: string;
+    asignatura: string;
+    profesor: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    };
+    grupo: {
+      id: string;
+      nombreGenerado: string;
+    };
+    cuatrimestre: {
+      id: string;
+      nombreGenerado: string;
+    };
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -40,13 +54,14 @@ export interface UpdateAsesoriaDto {
 
 // Tipos para consultas y filtros
 export interface QueryAsesoriaDto {
-  profesorNombre?: string;
-  cuatrimestreNombre?: string;
-  grupoNombre?: string;
-  temaNombre?: string;
-  asignaturaNombre?: string;
-  carreraNombre?: string;
-  cuatrimestreActual?: boolean;
+  profesorId?: string;
+  cuatrimestreId?: string;
+  grupoId?: string;
+  temaAsesoria?: string;
+  asignaturaId?: string;
+  carrera?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
   page?: number;
   limit?: number;
 }
@@ -58,3 +73,6 @@ export interface AsesoriaResponseDto {
   page: number;
   limit: number;
 }
+
+// Tipos para reportes
+export * from "./reportes";

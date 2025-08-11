@@ -13,3 +13,7 @@ export * from "./use-search-asesorias";
 
 // Hooks para funcionalidades especiales
 export * from "./use-test-relations";
+
+// Hooks para reportes
+export * from "./use-reportes-asesorias";
+export * from "./use-reporte-dashboard-asesorias";

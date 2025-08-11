@@ -99,67 +99,21 @@ export const getAllAsesorias = async (
 
     return (await response.json()) as GetAllAsesoriasResponse;
   } catch (error) {
-    console.error("Error fetching asesorías:", error);
+    console.error("Error al obtener asesorías:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
 
-// Crear nueva asesoría
-export const createAsesoria = async (
-  request: CreateAsesoriaRequest
-): Promise<CreateAsesoriaResponse> => {
-  try {
-    const { token, ...asesoriaData } = request;
-
-    const requestBody = JSON.stringify(asesoriaData);
-
-    const response = await fetch(ASESORIAS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: requestBody,
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error("Sesión expirada");
-      }
-
-      // Intentar obtener más detalles del error
-      let errorDetails = "";
-      try {
-        const errorResponse = await response.text();
-        errorDetails = errorResponse;
-      } catch (e) {
-        errorDetails = "No se pudieron obtener detalles del error";
-      }
-
-      throw new Error(
-        `Error al crear asesoría: ${response.status} ${response.statusText} - ${errorDetails}`
-      );
-    }
-
-    if (!response.headers.get("content-type")?.includes("application/json")) {
-      throw new Error("Respuesta no es JSON válida");
-    }
-
-    return (await response.json()) as CreateAsesoriaResponse;
-  } catch (error) {
-    console.error("Error creating asesoría:", error);
-    throw error instanceof Error ? error : new Error(String(error));
-  }
-};
-
-// Obtener una asesoría específica por ID
+// Obtener asesoría por ID
 export const getAsesoriaById = async (
   request: GetAsesoriaByIdRequest
 ): Promise<GetAsesoriaByIdResponse> => {
   try {
-    const { token, id } = request;
+    const { id, token } = request;
 
-    const response = await fetch(`${ASESORIAS_URL}/${id}`, {
+    const FETCH_URL = `${ASESORIAS_URL}/${id}`;
+
+    const response = await fetch(FETCH_URL, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -185,35 +139,37 @@ export const getAsesoriaById = async (
 
     return (await response.json()) as GetAsesoriaByIdResponse;
   } catch (error) {
-    console.error("Error fetching asesoría:", error);
+    console.error("Error al obtener asesoría por ID:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
 
-// Obtener asesorías por ID de carga académica
-export const getAsesoriasByCargaAcademica = async (
-  request: GetAsesoriasByCargaAcademicaRequest
-): Promise<GetAsesoriasByCargaAcademicaResponse> => {
+// Crear nueva asesoría
+export const createAsesoria = async (
+  request: CreateAsesoriaRequest
+): Promise<CreateAsesoriaResponse> => {
   try {
-    const { token, cargaAcademicaId } = request;
+    const { token, ...asesoriaData } = request;
 
-    const response = await fetch(
-      `${ASESORIAS_URL}/carga-academica/${cargaAcademicaId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(ASESORIAS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(asesoriaData),
+    });
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error("Sesión expirada");
       }
+      if (response.status === 400) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Datos de asesoría inválidos");
+      }
       throw new Error(
-        `Error al obtener asesorías por carga académica: ${response.status} ${response.statusText}`
+        `Error al crear asesoría: ${response.status} ${response.statusText}`
       );
     }
 
@@ -221,23 +177,22 @@ export const getAsesoriasByCargaAcademica = async (
       throw new Error("Respuesta no es JSON válida");
     }
 
-    const data = await response.json();
-    return { data } as GetAsesoriasByCargaAcademicaResponse;
+    return (await response.json()) as CreateAsesoriaResponse;
   } catch (error) {
-    console.error("Error fetching asesorías por carga académica:", error);
+    console.error("Error al crear asesoría:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
 
-// Actualizar asesoría
+// Actualizar asesoría existente
 export const updateAsesoria = async (
   request: UpdateAsesoriaRequest
 ): Promise<UpdateAsesoriaResponse> => {
   try {
-    const { token, id, ...asesoriaData } = request;
+    const { id, token, ...asesoriaData } = request;
 
     const response = await fetch(`${ASESORIAS_URL}/${id}`, {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -252,6 +207,10 @@ export const updateAsesoria = async (
       if (response.status === 404) {
         throw new Error("Asesoría no encontrada");
       }
+      if (response.status === 400) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Datos de asesoría inválidos");
+      }
       throw new Error(
         `Error al actualizar asesoría: ${response.status} ${response.statusText}`
       );
@@ -263,7 +222,7 @@ export const updateAsesoria = async (
 
     return (await response.json()) as UpdateAsesoriaResponse;
   } catch (error) {
-    console.error("Error updating asesoría:", error);
+    console.error("Error al actualizar asesoría:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
@@ -273,7 +232,7 @@ export const deleteAsesoria = async (
   request: DeleteAsesoriaRequest
 ): Promise<void> => {
   try {
-    const { token, id } = request;
+    const { id, token } = request;
 
     const response = await fetch(`${ASESORIAS_URL}/${id}`, {
       method: "DELETE",
@@ -295,19 +254,58 @@ export const deleteAsesoria = async (
       );
     }
   } catch (error) {
-    console.error("Error deleting asesoría:", error);
+    console.error("Error al eliminar asesoría:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
 
-// Probar relaciones (endpoint temporal del backend)
+// Obtener asesorías por carga académica
+export const getAsesoriasByCargaAcademica = async (
+  request: GetAsesoriasByCargaAcademicaRequest
+): Promise<GetAsesoriasByCargaAcademicaResponse> => {
+  try {
+    const { cargaAcademicaId, token } = request;
+
+    const FETCH_URL = `${ASESORIAS_URL}/carga-academica/${cargaAcademicaId}`;
+
+    const response = await fetch(FETCH_URL, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Sesión expirada");
+      }
+      throw new Error(
+        `Error al obtener asesorías por carga académica: ${response.status} ${response.statusText}`
+      );
+    }
+
+    if (!response.headers.get("content-type")?.includes("application/json")) {
+      throw new Error("Respuesta no es JSON válida");
+    }
+
+    return (await response.json()) as GetAsesoriasByCargaAcademicaResponse;
+  } catch (error) {
+    console.error("Error al obtener asesorías por carga académica:", error);
+    throw error instanceof Error ? error : new Error(String(error));
+  }
+};
+
+// Probar relaciones de asesorías
 export const testAsesoriasRelations = async (
   request: TestRelationsRequest
 ): Promise<TestRelationsResponse> => {
   try {
     const { token } = request;
 
-    const response = await fetch(`${ASESORIAS_URL}/test-relations`, {
+    const FETCH_URL = `${ASESORIAS_URL}/test-relations`;
+
+    const response = await fetch(FETCH_URL, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -330,7 +328,7 @@ export const testAsesoriasRelations = async (
 
     return (await response.json()) as TestRelationsResponse;
   } catch (error) {
-    console.error("Error testing asesorías relations:", error);
+    console.error("Error al probar relaciones de asesorías:", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
 };
