@@ -10,6 +10,7 @@ export interface CargaAcademica {
   grupoId: string;
   cuatrimestreId: string;
   activo: boolean;
+  esTutor: boolean;
   profesor: Usuario;
   grupo: Grupo;
   createdAt: string;

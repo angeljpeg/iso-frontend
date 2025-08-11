@@ -17,6 +17,7 @@ interface CargasAcademicasFiltersProps {
     cuatrimestreId?: string;
     activo?: boolean;
     actual?: boolean;
+    esTutor?: boolean;
   }) => void;
   onClearFilters: () => void;
   currentFilters: {
@@ -26,6 +27,7 @@ interface CargasAcademicasFiltersProps {
     cuatrimestreId?: string;
     activo?: boolean;
     actual?: boolean;
+    esTutor?: boolean;
   };
 }
 
@@ -52,6 +54,11 @@ export function CargasAcademicasFilters({
   );
   const [selectedActual, setSelectedActual] = useState<string>(
     currentFilters.actual !== undefined ? currentFilters.actual.toString() : ""
+  );
+  const [selectedEsTutor, setSelectedEsTutor] = useState<string>(
+    currentFilters.esTutor !== undefined
+      ? currentFilters.esTutor.toString()
+      : ""
   );
   const [añoFilter, setAñoFilter] = useState<string>("");
 
@@ -189,6 +196,14 @@ export function CargasAcademicasFilters({
     });
   };
 
+  const handleEsTutorChange = (value: string) => {
+    setSelectedEsTutor(value);
+    onFilterChange({
+      ...currentFilters,
+      esTutor: value === "" ? undefined : value === "true",
+    });
+  };
+
   const handleClearFilters = () => {
     setProfesorSearch("");
     setGrupoSearch("");
@@ -198,6 +213,7 @@ export function CargasAcademicasFilters({
     setSelectedCuatrimestre("");
     setSelectedEstado("");
     setSelectedActual("");
+    setSelectedEsTutor("");
     setAñoFilter("");
     onClearFilters();
   };
@@ -209,6 +225,7 @@ export function CargasAcademicasFilters({
     selectedCuatrimestre ||
     selectedEstado ||
     selectedActual ||
+    selectedEsTutor ||
     añoFilter;
 
   return (
@@ -278,6 +295,23 @@ export function CargasAcademicasFilters({
               value={selectedEstado}
               onChange={(e) => handleEstadoChange(e.target.value)}
               placeholder="Filtrar por estado"
+            />
+          </div>
+
+          {/* Es Tutor */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">
+              Es Tutor
+            </label>
+            <FormSelect
+              options={[
+                { value: "", label: "Todos" },
+                { value: "true", label: "Solo tutores" },
+                { value: "false", label: "No tutores" },
+              ]}
+              value={selectedEsTutor}
+              onChange={(e) => handleEsTutorChange(e.target.value)}
+              placeholder="Filtrar por tutor"
             />
           </div>
 

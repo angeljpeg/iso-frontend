@@ -16,6 +16,7 @@ interface UseCargaAcademicaOptions {
   asignatura?: string;
   activo?: boolean;
   actual?: boolean;
+  esTutor?: boolean;
   page?: number;
   limit?: number;
   onlyMyCarga?: boolean; // Nueva opción para obtener solo mi carga
@@ -55,6 +56,7 @@ export function useCargaAcademica(
       options.asignatura,
       options.activo,
       options.actual,
+      options.esTutor,
       options.page,
       options.limit,
       options.onlyMyCarga,
@@ -110,6 +112,7 @@ export function useCargaAcademica(
           asignatura: memoizedOptions.asignatura,
           activo: memoizedOptions.activo?.toString(),
           actual: memoizedOptions.actual?.toString(),
+          esTutor: memoizedOptions.esTutor?.toString(),
           page: memoizedOptions.page?.toString(),
           limit: memoizedOptions.limit?.toString(),
         };

@@ -158,6 +158,18 @@ export const CargasAcademicasTable = () => {
       },
     },
     {
+      accessorKey: "esTutor",
+      header: "Tutor",
+      cell: ({ row }) => {
+        const esTutor = row.getValue("esTutor") as boolean;
+        return (
+          <Badge variant={esTutor ? "default" : "secondary"}>
+            {esTutor ? "Sí" : "No"}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: "createdAt",
       header: "Fecha de Creación",
       cell: ({ row }) => {
@@ -214,6 +226,7 @@ export const CargasAcademicasTable = () => {
     cuatrimestreId?: string;
     activo?: boolean;
     actual?: boolean;
+    esTutor?: boolean;
   }) => {
     updateFilters(filters);
   };
@@ -279,6 +292,7 @@ export const CargasAcademicasTable = () => {
           cuatrimestreId: options.cuatrimestreId,
           activo: options.activo,
           actual: options.actual,
+          esTutor: options.esTutor,
         }}
       />
 

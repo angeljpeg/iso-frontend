@@ -4,6 +4,7 @@ export interface CreateCargaAcademicaRequest {
   carrera: string;
   asignatura: string;
   grupoId: string;
+  esTutor?: boolean;
 }
 
 export interface CreateCargaAcademicaResponse {
@@ -14,6 +15,7 @@ export interface CreateCargaAcademicaResponse {
   grupoId: string;
   cuatrimestreId: string;
   activo: boolean;
+  esTutor: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -31,6 +31,7 @@ import { useGrupos } from "~/hooks/useGrupos";
 import { useCargaAcademica } from "~/hooks/useCargaAcademica";
 import { useCarreras } from "~/hooks/useCarreras";
 import { RolUsuarioEnum } from "~/types/usuarios";
+import { FormCheckbox } from "~/components/ui/forms/FormCheckbox";
 
 // Schema de validación con Zod
 const createCargaAcademicaSchema = z.object({
@@ -44,6 +45,7 @@ const createCargaAcademicaSchema = z.object({
     .min(2, "La asignatura debe tener al menos 2 caracteres")
     .max(100, "La asignatura no puede exceder 100 caracteres"),
   grupoId: z.string().min(1, "El grupo es requerido"),
+  esTutor: z.boolean().default(false),
 });
 
 type CreateCargaAcademicaFormData = z.infer<typeof createCargaAcademicaSchema>;
@@ -92,6 +94,7 @@ export const CrearCargaAcademicaModal = ({
       carrera: "",
       asignatura: "",
       grupoId: "",
+      esTutor: false,
     },
   });
 
@@ -171,6 +174,7 @@ export const CrearCargaAcademicaModal = ({
         carrera: data.carrera,
         asignatura: data.asignatura,
         grupoId: data.grupoId,
+        esTutor: data.esTutor,
       };
 
       // Crear la carga académica
@@ -323,6 +327,24 @@ export const CrearCargaAcademicaModal = ({
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="esTutor"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <FormCheckbox
+                      checked={field.value}
+                      onChange={field.onChange}
+                      disabled={isLoading}
+                      label="¿Es tutor del grupo?"
+                      helperText="Marque esta opción si el profesor será el tutor del grupo"
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
