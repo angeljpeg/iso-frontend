@@ -3,9 +3,16 @@ import { useNavigate } from "react-router";
 import { useAuthStore } from "~/store/auth";
 import { getAllSeguimientosCurso } from "~/services/programacion-curso.service";
 import type { SeguimientoCurso } from "~/types/programacion-curso";
-import type { GetSeguimientosCursoParams } from "~/types/programacion-curso/servicios";
+import type { GetSeguimientosCursoRequest } from "~/types/programacion-curso/servicios";
 
-interface UseSeguimientosCursoOptions extends GetSeguimientosCursoParams {
+interface UseSeguimientosCursoOptions {
+  page?: number;
+  limit?: number;
+  estado?: string;
+  cuatrimestreId?: string;
+  profesorId?: string;
+  carrera?: string;
+  search?: string;
   autoFetch?: boolean;
 }
 
