@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useAuthStore } from "~/store/auth";
 import { useSeguimientosCurso } from "~/hooks/programacion-curso/useSeguimientosCurso";
@@ -10,7 +10,6 @@ import {
 } from "~/components/formatos/programacion-cursos/ProgramacionCursosFilters";
 import { Button } from "~/components/ui/Button";
 import { RefreshCw, FileText, Filter as FilterIcon } from "lucide-react";
-
 
 export default function ProgramacionCursosPage() {
   const { usuario } = useAuthStore();
