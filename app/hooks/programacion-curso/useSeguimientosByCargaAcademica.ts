@@ -127,6 +127,19 @@ export function useSeguimientosByCargaAcademica(
     }
   }, [fetchSeguimientos, options.autoFetch, options.cargaAcademicaId]);
 
+  // Limpiar estado cuando cambie la carga académica
+  useEffect(() => {
+    if (initialOptions.cargaAcademicaId !== options.cargaAcademicaId) {
+      console.log(
+        "🔄 Cambió cargaAcademicaId, limpiando estado anterior"
+      );
+      // Limpiar el estado anterior antes de cargar el nuevo
+      setSeguimientos([]);
+      setError(null);
+      setIsLoading(false);
+    }
+  }, [initialOptions.cargaAcademicaId, options.cargaAcademicaId]);
+
   // Actualizar las options cuando cambie cargaAcademicaId externamente
   useEffect(() => {
     if (initialOptions.cargaAcademicaId !== options.cargaAcademicaId) {

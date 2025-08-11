@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router";
 import {
   useAsignaturaCompleta,
   useTemasAsignatura,
@@ -21,47 +21,181 @@ import {
 } from "~/components/ui/modals";
 
 export default function AsignaturaPage() {
+  console.log("🚀 AsignaturaPage se está renderizando");
+
   const { asignaturaId } = useParams<{ asignaturaId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
+
+  console.log("📋 Parámetros:", { asignaturaId, usuario: usuario?.id });
+
+  // Validar que tengamos asignaturaId
+  if (!asignaturaId) {
+    console.error("❌ No hay asignaturaId");
+    return (
+      <DashboardLayout title="Error">
+        <div className="p-6 bg-red-50 rounded-lg border border-utn-error/30">
+          <h3 className="text-lg font-semibold text-utn-error">
+            Error: No se especificó la asignatura
+          </h3>
+          <Button
+            onClick={() => navigate("/dashboard")}
+            className="mt-4 text-white bg-utn-primary hover:bg-utn-primary-dark"
+          >
+            Volver al Dashboard
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Validar que tengamos usuario
+  if (!usuario) {
+    console.error("❌ No hay usuario autenticado");
+    return (
+      <DashboardLayout title="Error">
+        <div className="p-6 bg-red-50 rounded-lg border border-utn-error/30">
+          <h3 className="text-lg font-semibold text-utn-error">
+            Error: No hay usuario autenticado
+          </h3>
+          <Button
+            onClick={() => navigate("/login")}
+            className="mt-4 text-white bg-utn-primary hover:bg-utn-primary-dark"
+          >
+            Ir al Login
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   // Hooks para obtener datos
   const {
     asignatura,
     isLoading: isLoadingAsignatura,
     error: errorAsignatura,
-  } = useAsignaturaCompleta(asignaturaId!);
+  } = useAsignaturaCompleta(asignaturaId);
   console.log("asignatura: ", asignatura);
   const {
     temas,
     isLoading: isLoadingTemas,
     error: errorTemas,
-  } = useTemasAsignatura(asignaturaId!);
+  } = useTemasAsignatura(asignaturaId);
   console.log("temas: ", temas);
   // Hook para obtener carga académica relacionada con esta asignatura
-  const {
-    cargasAcademicas,
-    isLoading: isLoadingCarga,
-    error: errorCarga,
-  } = useCargaAcademica({
+  let cargasAcademicas: any[] = [];
+  let isLoadingCarga = false;
+  let errorCarga: string | null = null;
+
+  try {
+    const cargaAcademicaResult = useCargaAcademica({
+      asignatura: asignaturaId,
+      profesorId: usuario.id,
+      actual: true,
+      activo: true,
+    });
+    cargasAcademicas = cargaAcademicaResult.cargasAcademicas;
+    isLoadingCarga = cargaAcademicaResult.isLoading;
+    errorCarga = cargaAcademicaResult.error;
+  } catch (err) {
+    console.error("❌ Error en useCargaAcademica:", err);
+    errorCarga = "Error al cargar cargas académicas";
+  }
+
+  console.log("🔍 Hook useCargaAcademica:", {
     asignatura: asignaturaId,
     profesorId: usuario?.id,
-    actual: true,
-    activo: true,
+    cargasAcademicas,
+    isLoadingCarga,
+    errorCarga,
   });
-  console.log("cargasAcademicas: ", cargasAcademicas);
 
-  // Hook para obtener seguimientos por carga académica
+  // Obtener el grupo actual de la URL para filtrar la carga académica correcta
+  const grupoActual = searchParams.get("grupoId");
+
+  // Filtrar solo la carga académica del grupo actual
+  const cargasDelGrupoActual = useMemo(() => {
+    if (!grupoActual) {
+      // Si no hay grupo específico, mostrar todas las cargas académicas
+      console.log(
+        "⚠️ No hay grupo específico, mostrando todas las cargas académicas"
+      );
+      return cargasAcademicas;
+    }
+    return cargasAcademicas.filter((carga) => carga.grupo.id === grupoActual);
+  }, [cargasAcademicas, grupoActual]);
+
+  // Hook para obtener seguimientos por carga académica del grupo actual
+  const cargaAcademicaId = cargasDelGrupoActual[0]?.id;
+
+  console.log("🔍 Antes de useSeguimientosByCargaAcademica:", {
+    cargaAcademicaId,
+    cargasDelGrupoActual: cargasDelGrupoActual.length,
+    cargasDelGrupoActualArray: cargasDelGrupoActual,
+    cargasAcademicasLength: cargasAcademicas.length,
+    usuarioId: usuario?.id,
+    grupoActual,
+  });
+
   const {
     seguimientos,
     isLoading: isLoadingSeguimientos,
     error: errorSeguimientos,
     refresh: refreshSeguimientos,
   } = useSeguimientosByCargaAcademica({
-    cargaAcademicaId: cargasAcademicas[0]?.id,
-    autoFetch: true, // Activamos autoFetch para que se ejecute automáticamente
+    cargaAcademicaId: cargaAcademicaId, // Solo pasar si existe
+    autoFetch: !!cargaAcademicaId, // Solo autoFetch si hay ID
   });
-  console.log("seguimientos: ", seguimientos);
+
+  // Log adicional para verificar que el hook esté funcionando
+  console.log("🔍 Después de useSeguimientosByCargaAcademica:", {
+    cargaAcademicaId,
+    seguimientosLength: seguimientos.length,
+    seguimientos,
+    isLoadingSeguimientos,
+    errorSeguimientos,
+    seguimientosDetalle: seguimientos.map((s) => ({
+      id: s.id,
+      tipo: typeof s.id,
+    })),
+  });
+
+  // Verificar si el hook debería estar cargando
+  if (
+    cargaAcademicaId &&
+    seguimientos.length === 0 &&
+    !isLoadingSeguimientos &&
+    !errorSeguimientos
+  ) {
+    console.warn(
+      "⚠️ El hook no está cargando seguimientos. Posible problema con autoFetch."
+    );
+    console.log("🔧 Intentando cargar seguimientos manualmente...");
+    // Intentar cargar manualmente después de un delay
+    setTimeout(() => {
+      if (refreshSeguimientos) {
+        refreshSeguimientos();
+      }
+    }, 1000);
+  }
+
+  // Debug: verificar que los seguimientos correspondan al grupo actual
+  console.log("🔍 Debug seguimientos:", {
+    grupoActual,
+    cargasDelGrupoActual: cargasDelGrupoActual.length,
+    cargaAcademicaId: cargasDelGrupoActual[0]?.id,
+    seguimientos: seguimientos.length,
+    isLoadingSeguimientos,
+    errorSeguimientos,
+    seguimientosArray: seguimientos,
+  });
+
+  // Mostrar información sobre el contexto actual
+  const contextoInfo = grupoActual
+    ? `Grupo específico: ${grupoActual}`
+    : "Vista general de la asignatura (sin grupo específico)";
+  console.log("Contexto:", contextoInfo);
   // Modal hooks
   const {
     isOpen: isSeleccionOpen,
@@ -78,6 +212,7 @@ export default function AsignaturaPage() {
     openModal: openDetalle,
     closeModal: closeDetalleBase,
   } = useModal();
+
   const {
     isOpen: isAsesoriaOpen,
     openModal: openAsesoria,
@@ -97,13 +232,41 @@ export default function AsignaturaPage() {
   const [seguimientoId, setSeguimientoId] = useState<string>("");
   const [detalleExistente, setDetalleExistente] = useState<any>(null);
 
+  // Debug: verificar estado en cada render
+  console.log("🔍 Estado en render:", {
+    timestamp: new Date().toISOString(),
+    seguimientoId: seguimientoId || "vacío",
+    selectedTema: selectedTema?.nombre || "null",
+  });
+
   const isCoordinador = usuario?.rol === "coordinador";
   const isProfesor =
     usuario?.rol === "profesor_tiempo_completo" ||
     usuario?.rol === "profesor_asignatura";
 
-  // Obtener la primera carga académica (asumiendo que solo hay una por asignatura)
-  const cargaAcademica = cargasAcademicas[0];
+  // Debug: verificar estado del modal
+  console.log("🔍 Estado del modal de detalle:", {
+    isDetalleOpen,
+    selectedTema: !!selectedTema,
+    seguimientoId: !!seguimientoId,
+    selectedTemaSemana: selectedTema?.semanaProgramada,
+    condicionModal: isProfesor && !!selectedTema && !!seguimientoId,
+  });
+
+  // Obtener la primera carga académica del grupo actual
+  const cargaAcademica = cargasDelGrupoActual[0];
+
+  // Mostrar advertencia si no hay grupo específico y hay múltiples grupos
+  const hayMultiplesGrupos = !grupoActual && cargasAcademicas.length > 1;
+
+  // Log de advertencia cuando hay múltiples grupos
+  useEffect(() => {
+    if (hayMultiplesGrupos) {
+      console.warn(
+        "⚠️ Múltiples grupos detectados sin grupo específico. Se recomienda navegar desde la página del grupo."
+      );
+    }
+  }, [hayMultiplesGrupos]);
 
   // Limpiar estado cuando el componente se desmonte
   useEffect(() => {
@@ -114,15 +277,111 @@ export default function AsignaturaPage() {
     };
   }, []);
 
+  // Limpiar estado cuando cambie la carga académica (grupo) - TEMPORALMENTE COMENTADO
+  /*
+  useEffect(() => {
+    if (cargasDelGrupoActual.length > 0) {
+      const nuevaCargaAcademica = cargasDelGrupoActual[0];
+      // Si cambia la carga académica, limpiar el estado del detalle
+      if (detalleExistente || seguimientoId) {
+        console.log("⚠️ LIMPIANDO ESTADO por cambio de carga académica:", {
+          detalleExistente: !!detalleExistente,
+          seguimientoId: !!seguimientoId,
+          nuevaCargaAcademica: nuevaCargaAcademica.id,
+        });
+        setDetalleExistente(null);
+        setSeguimientoId("");
+        setSelectedTema(null);
+      }
+    }
+  }, [cargasDelGrupoActual, detalleExistente, seguimientoId]);
+  */
+
+  // Limpiar estado cuando cambie el grupo - TEMPORALMENTE COMENTADO
+  /*
+  useEffect(() => {
+    if (grupoActual) {
+      // Si cambia el grupo, limpiar completamente el estado
+      console.log("⚠️ LIMPIANDO ESTADO por cambio de grupo:", {
+        grupoActual,
+        detalleExistente: !!detalleExistente,
+        seguimientoId: !!seguimientoId,
+        selectedTema: !!selectedTema,
+      });
+      setDetalleExistente(null);
+      setSeguimientoId("");
+      setSelectedTema(null);
+    }
+  }, [grupoActual, detalleExistente, seguimientoId, selectedTema]);
+  */
+
+  // Efecto para debuggear el seguimientoId
+  useEffect(() => {
+    console.log("🔍 useEffect - seguimientoId cambió:", seguimientoId);
+    console.log("🔍 useEffect - tipo de seguimientoId:", typeof seguimientoId);
+    console.log(
+      "🔍 useEffect - longitud de seguimientoId:",
+      seguimientoId?.length
+    );
+  }, [seguimientoId]);
+
+  // Efecto para debuggear el selectedTema
+  useEffect(() => {
+    console.log("🔍 useEffect - selectedTema cambió:", selectedTema);
+    console.log(
+      "🔍 useEffect - semana programada:",
+      selectedTema?.semanaProgramada
+    );
+  }, [selectedTema]);
+
+  // Debug: verificar cuando cambia la carga académica
+  useEffect(() => {
+    console.log("🔄 Carga académica cambió:", {
+      cargasDelGrupoActual: cargasDelGrupoActual.length,
+      cargaAcademicaId: cargasDelGrupoActual[0]?.id,
+      grupoActual,
+    });
+  }, [cargasDelGrupoActual, grupoActual]);
+
+  // Forzar carga de seguimientos cuando cambie la carga académica
+  useEffect(() => {
+    if (cargaAcademicaId && refreshSeguimientos) {
+      console.log("🔄 Forzando carga de seguimientos para:", cargaAcademicaId);
+      // Pequeño delay para asegurar que el hook esté listo
+      setTimeout(() => {
+        refreshSeguimientos();
+      }, 500);
+    }
+  }, [cargaAcademicaId, refreshSeguimientos]);
+
   const handleTemaClick = async (tema: Tema) => {
     if (!usuario) return;
 
+    console.log("🔍 handleTemaClick - tema seleccionado:", tema);
+    console.log(
+      "🔍 handleTemaClick - semana programada:",
+      tema.semanaProgramada
+    );
+
     setSelectedTema(tema);
+    console.log("🔍 handleTemaClick - selectedTema establecido:", tema);
+
     openSeleccion();
   };
 
   const handleSeguimientoSelected = () => {
     closeSeleccion();
+
+    console.log("🔍 handleSeguimientoSelected ejecutado:", {
+      isCoordinador,
+      isProfesor,
+      cargaAcademica: !!cargaAcademica,
+      cargaAcademicaId: cargaAcademica?.id,
+      seguimientosLength: seguimientos.length,
+      seguimientos,
+      cargasDelGrupoActual: cargasDelGrupoActual.length,
+      grupoActual,
+    });
 
     if (isCoordinador) {
       openCrear();
@@ -130,9 +389,74 @@ export default function AsignaturaPage() {
       try {
         // Verificar si ya existe un seguimiento para esta carga académica
         if (cargaAcademica) {
+          console.log("✅ Carga académica encontrada:", {
+            id: cargaAcademica.id,
+            grupoId: cargaAcademica.grupo.id,
+            grupoActual: grupoActual,
+            tipoId: typeof cargaAcademica.id,
+            idValido: !!cargaAcademica.id && cargaAcademica.id.trim() !== "",
+          });
+
+          // Si hay grupo específico, verificar que la carga académica corresponda
+          if (grupoActual && cargaAcademica.grupo.id !== grupoActual) {
+            console.warn("⚠️ Carga académica no corresponde al grupo actual:", {
+              cargaAcademicaGrupo: cargaAcademica.grupo.id,
+              grupoActual: grupoActual,
+            });
+            showAlert(
+              "Error: La carga académica no corresponde al grupo actual"
+            );
+            return;
+          }
+
+          console.log("🔍 Verificando seguimientos:", {
+            seguimientosLength: seguimientos.length,
+            seguimientos: seguimientos,
+            cargaAcademicaId: cargaAcademica.id,
+            seguimientosArray: seguimientos,
+            primerSeguimiento: seguimientos[0],
+            primerSeguimientoId: seguimientos[0]?.id,
+            tipoPrimerSeguimientoId: typeof seguimientos[0]?.id,
+          });
+
           if (seguimientos.length > 0) {
             const seguimiento = seguimientos[0];
+            console.log("🔍 Seguimiento encontrado:", seguimiento);
+            console.log("🔍 ID del seguimiento:", seguimiento.id);
+            console.log("🔍 Tipo del ID:", typeof seguimiento.id);
+            console.log(
+              "🔍 Seguimiento completo:",
+              JSON.stringify(seguimiento, null, 2)
+            );
+
+            // Verificar que el ID sea válido
+            if (
+              !seguimiento.id ||
+              typeof seguimiento.id !== "string" ||
+              seguimiento.id.trim() === ""
+            ) {
+              console.error("❌ ID del seguimiento inválido:", seguimiento.id);
+              showAlert("Error: ID del seguimiento inválido");
+              return;
+            }
+
+            console.log(
+              "🔍 ANTES de setSeguimientoId - seguimientoId actual:",
+              seguimientoId
+            );
             setSeguimientoId(seguimiento.id);
+            console.log(
+              "🔍 DESPUÉS de setSeguimientoId - nuevo valor:",
+              seguimiento.id
+            );
+            console.log("🔍 Verificando que se estableció correctamente...");
+
+            // Verificar que el estado se haya establecido
+            console.log("🔍 Estado después de setSeguimientoId:", {
+              seguimientoId,
+              nuevoValor: seguimiento.id,
+              sonIguales: seguimientoId === seguimiento.id,
+            });
 
             // Buscar si ya existe un detalle para este tema
             const detalleDelTema = seguimiento.detalles?.find(
@@ -152,7 +476,33 @@ export default function AsignaturaPage() {
               );
             }
 
-            openDetalle();
+            console.log(
+              "🔍 Antes de openDetalle - seguimientoId:",
+              seguimiento.id
+            );
+            console.log("🔍 Estado actual del seguimientoId:", seguimientoId);
+
+            // Agregar un pequeño delay para asegurar que el estado se establezca
+            setTimeout(() => {
+              console.log(
+                "🔍 DESPUÉS del delay - seguimientoId:",
+                seguimientoId
+              );
+              console.log("🔍 DESPUÉS del delay - selectedTema:", selectedTema);
+              console.log(
+                "🔍 DESPUÉS del delay - semana programada:",
+                selectedTema?.semanaProgramada
+              );
+              console.log("🔍 DESPUÉS del delay - Abriendo modal...");
+              console.log("🔍 DESPUÉS del delay - Condición del modal:", {
+                isProfesor,
+                selectedTema: !!selectedTema,
+                seguimientoId: !!seguimientoId,
+                condicionCumplida:
+                  isProfesor && !!selectedTema && !!seguimientoId,
+              });
+              openDetalle();
+            }, 100);
           } else {
             showAlert(
               "No hay seguimientos creados para esta carga académica. Contacte al coordinador."
@@ -217,13 +567,22 @@ export default function AsignaturaPage() {
   };
 
   // Estados de carga combinados
-  const isLoading =
-    isLoadingAsignatura ||
-    isLoadingTemas ||
-    isLoadingCarga ||
-    isLoadingSeguimientos;
-  const error =
-    errorAsignatura || errorTemas || errorCarga || errorSeguimientos;
+  const isLoading = isLoadingAsignatura || isLoadingTemas;
+  const error = errorAsignatura || errorTemas;
+
+  // Debug: verificar estados de carga
+  console.log("Estados de carga:", {
+    isLoadingAsignatura,
+    isLoadingTemas,
+    isLoadingCarga,
+    isLoadingSeguimientos,
+  });
+  console.log("Errores:", {
+    errorAsignatura,
+    errorTemas,
+    errorCarga,
+    errorSeguimientos,
+  });
 
   if (isLoading) {
     return (
@@ -336,6 +695,37 @@ export default function AsignaturaPage() {
             <span>Volver al Dashboard</span>
           </Button>
         </div>
+
+        {/* Advertencia cuando no hay grupo específico */}
+        {hayMultiplesGrupos && (
+          <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="flex items-start">
+              <svg
+                className="mr-3 w-5 h-5 text-yellow-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+              <div>
+                <h4 className="text-sm font-medium text-yellow-800">
+                  Múltiples grupos detectados
+                </h4>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Esta asignatura está asignada a múltiples grupos. Para una
+                  mejor experiencia, navega desde la página específica del
+                  grupo.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Temas */}
@@ -349,12 +739,47 @@ export default function AsignaturaPage() {
           </p>
         </div>
 
+        {/* Mensaje cuando no hay cargas académicas */}
+        {!isLoadingCarga && cargasDelGrupoActual.length === 0 && (
+          <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start">
+              <svg
+                className="mr-3 w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h4 className="text-sm font-medium text-blue-800">
+                  No tienes cargas académicas para esta asignatura
+                </h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  {grupoActual
+                    ? `No tienes asignaturas asignadas en el grupo ${grupoActual}`
+                    : "No tienes asignaturas asignadas para esta asignatura"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {temas && temas.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {temas.map((tema: Tema, index: number) => (
               <div
                 key={`${tema.nombre}-${tema.unidad}-${index}`}
-                className="flex flex-col justify-between p-4 h-full bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow duration-200 hover:shadow-md"
+                className={`flex flex-col justify-between p-4 h-full bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow duration-200 ${
+                  cargasDelGrupoActual.length === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:shadow-md cursor-pointer"
+                }`}
               >
                 <div className="flex-1">
                   <TemaCard tema={tema} onClick={() => handleTemaClick(tema)} />
@@ -394,7 +819,7 @@ export default function AsignaturaPage() {
         />
       )}
 
-      {isProfesor && (
+      {isProfesor && selectedTema && seguimientoId && (
         <AgregarDetalleModal
           isOpen={isDetalleOpen}
           onClose={closeDetalle}

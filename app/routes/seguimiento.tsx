@@ -48,7 +48,37 @@ export default function SeguimientoPage() {
     actualizarAvanceSemana,
     enviarSeguimiento,
     guardarManual,
+    refetch,
+    limpiarEstado,
   } = useSeguimientoIndividual(seguimientoId || undefined);
+
+  // Limpiar estado cuando cambie el grupo o tema
+  useEffect(() => {
+    if (grupoId || temaId) {
+      // Si cambia el grupo o tema, limpiar el seguimiento actual
+      if (seguimiento && seguimiento.grupoId !== grupoId) {
+        // El seguimiento actual no corresponde al grupo actual, limpiarlo completamente
+        limpiarEstado();
+        setModalJustificacion({
+          isOpen: false,
+          semana: 0,
+          temaEsperado: "",
+        });
+      }
+    }
+  }, [grupoId, temaId, seguimiento, limpiarEstado]);
+
+  // Limpiar estado cuando se desmonte el componente
+  useEffect(() => {
+    return () => {
+      limpiarEstado();
+      setModalJustificacion({
+        isOpen: false,
+        semana: 0,
+        temaEsperado: "",
+      });
+    };
+  }, [limpiarEstado]);
 
   // Redirigir si no está autenticado o no es profesor
   useEffect(() => {

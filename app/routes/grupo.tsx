@@ -6,7 +6,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { useAsignatura } from "../hooks/asignaturas/useAsignatura";
 import { Card } from "../components/ui/Card";
-import { getAllCargaAcademica } from "../services/carga-academica.service";
+import { getCargaByProfesor } from "../services/carga-academica.service";
 import { tutoriasService } from "../services/tutorias.service";
 import { CrearTutoriaModal } from "../components/ui/modals/crear-tutoria-modal";
 import { AgregarDetalleTutoriaModal } from "../components/ui/modals/agregar-detalle-tutoria-modal";
@@ -23,9 +23,11 @@ import type {
 function AsignaturaCardWithData({
   nombreAsignatura,
   carrera,
+  grupoId,
 }: {
   nombreAsignatura: string;
   carrera?: string;
+  grupoId: string;
 }) {
   const { asignatura, isLoading, error } = useAsignatura(nombreAsignatura);
   const navigate = useNavigate();
@@ -57,7 +59,7 @@ function AsignaturaCardWithData({
 
   const handleClick = () => {
     const encodedName = encodeURIComponent(asignatura.nombre);
-    navigate(`/asignatura/${encodedName}`);
+    navigate(`/asignatura/${encodedName}?grupoId=${grupoId}`);
   };
 
   return (
@@ -94,15 +96,12 @@ export default function GrupoPage() {
 
   // Estado para las tutorías
   const [tutorias, setTutorias] = useState<Tutoria[]>([]);
+  const [tutoriasLoading, setTutoriasLoading] = useState(false);
+  const [tutoriasError, setTutoriasError] = useState<string | null>(null);
+  const [tutoriasCargadas, setTutoriasCargadas] = useState(false);
 
   // Asegurar que tutorias sea siempre un array
   const tutoriasSeguras = Array.isArray(tutorias) ? tutorias : [];
-
-  // Debug: verificar el estado de tutorias
-  console.log("Estado actual de tutorias:", tutorias);
-  console.log("tutoriasSeguras:", tutoriasSeguras);
-  const [tutoriasLoading, setTutoriasLoading] = useState(false);
-  const [tutoriasError, setTutoriasError] = useState<string | null>(null);
 
   // Estado para los modales
   const [showCrearTutoriaModal, setShowCrearTutoriaModal] = useState(false);
@@ -145,16 +144,25 @@ export default function GrupoPage() {
   // Cargar las cargas académicas del profesor logueado
   useEffect(() => {
     const fetchMisCargasAcademicas = async () => {
-      if (!accessToken || !grupoId) return;
+      if (!accessToken || !grupoId || !useAuthStore.getState().usuario?.id)
+        return;
 
       try {
         setCargasLoading(true);
         setCargasError(null);
-        const data = await getAllCargaAcademica({
-          grupoId: grupoId,
+
+        // Obtener solo las cargas del profesor logueado
+        const data = await getCargaByProfesor({
+          profesorId: useAuthStore.getState().usuario!.id,
           token: accessToken,
         });
-        setMisCargasAcademicas(data.data);
+
+        // Filtrar solo las cargas que pertenecen al grupo actual
+        const cargasDelGrupoActual = data.data.filter(
+          (carga) => carga.grupoId === grupoId
+        );
+
+        setMisCargasAcademicas(cargasDelGrupoActual);
       } catch (err) {
         console.error("Error cargando cargas académicas:", err);
         setCargasError(
@@ -170,10 +178,8 @@ export default function GrupoPage() {
     }
   }, [isAuthenticated, accessToken, grupoId]);
 
-  // Filtrar las cargas académicas que pertenecen al grupo actual
-  const cargasDelGrupo = misCargasAcademicas.filter(
-    (carga) => carga.grupoId === grupoId
-  );
+  // Las cargas ya están filtradas por grupo y profesor, no necesitamos filtrar de nuevo
+  const cargasDelGrupo = misCargasAcademicas;
 
   // Verificar si el profesor es tutor del grupo
   const esTutorDelGrupo = cargasDelGrupo.some((carga) => carga.esTutor);
@@ -185,7 +191,7 @@ export default function GrupoPage() {
       !accessToken ||
       !esTutorDelGrupo ||
       !cargaTutoria?.id ||
-      tutoriasLoading
+      tutoriasCargadas
     ) {
       return;
     }
@@ -198,6 +204,7 @@ export default function GrupoPage() {
         accessToken
       );
       setTutorias(response);
+      setTutoriasCargadas(true);
     } catch (err) {
       console.error("Error en cargarTutorias:", err);
       setTutoriasError(
@@ -206,10 +213,11 @@ export default function GrupoPage() {
     } finally {
       setTutoriasLoading(false);
     }
-  }, [accessToken, esTutorDelGrupo, cargaTutoria, tutoriasLoading]);
+  }, [accessToken, esTutorDelGrupo, cargaTutoria, tutoriasCargadas]);
 
   // Cargar tutorías solo cuando sea necesario y si el profesor es tutor
   useEffect(() => {
+    // Evitar cargar si ya están cargando o si ya se cargaron
     if (
       isAuthenticated &&
       accessToken &&
@@ -217,16 +225,17 @@ export default function GrupoPage() {
       cargasDelGrupo.length > 0 &&
       esTutorDelGrupo &&
       !tutoriasLoading &&
-      tutoriasSeguras.length === 0
+      !tutoriasCargadas
     ) {
       cargarTutorias();
     }
   }, [
-    cargasDelGrupo,
+    isAuthenticated,
+    accessToken,
     grupoId,
+    cargasDelGrupo,
     esTutorDelGrupo,
     cargarTutorias,
-    tutoriasLoading,
   ]);
 
   // Función para crear una nueva tutoría
@@ -250,6 +259,12 @@ export default function GrupoPage() {
     }
   };
 
+  // Función para recargar las tutorías
+  const recargarTutorias = useCallback(async () => {
+    setTutoriasCargadas(false);
+    await cargarTutorias();
+  }, [cargarTutorias]);
+
   // Función para agregar detalle a una tutoría
   const handleAgregarDetalle = async (detalleData: CreateTutoriaDetalleDto) => {
     if (!accessToken || !tutoriaSeleccionada) return;
@@ -271,31 +286,10 @@ export default function GrupoPage() {
       if (response && response.id) {
         console.log("Detalle creado exitosamente:", response);
 
-        // En lugar de actualizar toda la tutoría, solo agregar el detalle al estado local
-        // o recargar las tutorías para obtener la información actualizada
-        await cargarTutorias(); // Recargar las tutorías para obtener datos actualizados
+        // Recargar las tutorías para obtener datos actualizados
+        await recargarTutorias();
       } else {
         console.warn("Respuesta inesperada del backend:", response);
-      }
-
-      // Log del estado actual de las tutorías para debug
-      console.log("Estado actual de tutorias:", tutorias);
-      console.log("tutoriasSeguras:", tutoriasSeguras);
-
-      // Verificar que las tutorías existan antes de continuar
-      if (!tutorias || !Array.isArray(tutorias)) {
-        console.warn("Estado de tutorías no válido, recargando...");
-        await cargarTutorias();
-      }
-
-      // Verificar que la tutoría seleccionada tenga todas las propiedades necesarias
-      if (
-        tutoriaSeleccionada &&
-        (!tutoriaSeleccionada.fecha || !tutoriaSeleccionada.id)
-      ) {
-        console.warn("Tutoría seleccionada incompleta:", tutoriaSeleccionada);
-        // Recargar para obtener datos completos
-        await cargarTutorias();
       }
 
       setShowAgregarDetalleModal(false);
@@ -445,6 +439,7 @@ export default function GrupoPage() {
                     key={carga.id}
                     nombreAsignatura={carga.asignatura}
                     carrera={carga.carrera}
+                    grupoId={grupoId!}
                   />
                 ))
               )}

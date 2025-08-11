@@ -14,6 +14,26 @@ export function useSeguimientoIndividual(seguimientoId?: string) {
   // Para autoguardado
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSavedDataRef = useRef<string>("");
+  
+  // Limpiar estado cuando cambie el seguimientoId
+  useEffect(() => {
+    if (seguimientoId) {
+      // Solo limpiar si es un ID diferente
+      if (seguimiento?.id !== seguimientoId) {
+        setSeguimiento(null);
+        setError(null);
+        setHasUnsavedChanges(false);
+        lastSavedDataRef.current = "";
+      }
+    } else {
+      // Si no hay seguimientoId, limpiar todo
+      setSeguimiento(null);
+      setError(null);
+      setHasUnsavedChanges(false);
+      lastSavedDataRef.current = "";
+      setIsLoading(false);
+    }
+  }, [seguimientoId, seguimiento?.id]);
 
   const fetchSeguimiento = useCallback(async () => {
     if (!seguimientoId) {
@@ -121,6 +141,17 @@ export function useSeguimientoIndividual(seguimientoId?: string) {
     await actualizarSeguimiento(seguimiento);
   }, [seguimiento, actualizarSeguimiento]);
 
+  const limpiarEstado = useCallback(() => {
+    setSeguimiento(null);
+    setError(null);
+    setHasUnsavedChanges(false);
+    setSeguimiento(null);
+    lastSavedDataRef.current = "";
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+  }, []);
+
   // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
@@ -145,5 +176,6 @@ export function useSeguimientoIndividual(seguimientoId?: string) {
     actualizarAvanceSemana,
     enviarSeguimiento,
     guardarManual,
+    limpiarEstado,
   };
 }
