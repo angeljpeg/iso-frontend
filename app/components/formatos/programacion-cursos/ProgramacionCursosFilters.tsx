@@ -4,7 +4,6 @@ import { FormInput } from "~/components/ui/forms/FormInput";
 import { FormRadioGroup } from "~/components/ui/forms/FormRadioGroup";
 import { Badge } from "~/components/ui/badge";
 import { Search, Filter, X } from "lucide-react";
-import type { EstadoSeguimiento } from "~/types/programacion-curso";
 
 interface ProgramacionCursosFiltersProps {
   onFiltersChange: (filters: FilterOptions) => void;
@@ -74,6 +73,11 @@ export function ProgramacionCursosFilters({
       .length;
   };
 
+  // Manejador para el cambio de estado en el radio group
+  const handleEstadoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFilterChange("estado", e.target.value);
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
       {/* Header de filtros */}
@@ -120,7 +124,7 @@ export function ProgramacionCursosFilters({
             type="text"
             placeholder="Buscar por profesor, asignatura o tema..."
             value={filters.search || ""}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-10"
             disabled={isLoading}
           />
@@ -135,12 +139,28 @@ export function ProgramacionCursosFilters({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Estado
             </label>
-            <FormRadioGroup
-              options={estados}
-              value={filters.estado || ""}
-              onChange={(value) => handleFilterChange("estado", value)}
-              disabled={isLoading}
-            />
+            <div className="space-y-2">
+              {estados.map((estado) => (
+                <div key={estado.value} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`estado-${estado.value}`}
+                    name="estado"
+                    value={estado.value}
+                    checked={filters.estado === estado.value}
+                    onChange={handleEstadoChange}
+                    disabled={isLoading}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor={`estado-${estado.value}`}
+                    className="ml-2 text-sm text-gray-700"
+                  >
+                    {estado.label}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Filtro por Cuatrimestre */}

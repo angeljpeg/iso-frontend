@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/Button";
-import { 
-  X, 
-  Trash2, 
+import {
+  X,
+  Trash2,
   AlertTriangle,
   User,
   BookOpen,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import type { SeguimientoCurso } from "~/types/programacion-curso";
 
@@ -16,25 +16,25 @@ interface SeguimientoDeleteModalProps {
   onSuccess: () => void;
 }
 
-export function SeguimientoDeleteModal({ 
-  seguimiento, 
-  onClose, 
-  onSuccess 
+export function SeguimientoDeleteModal({
+  seguimiento,
+  onClose,
+  onSuccess,
 }: SeguimientoDeleteModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      
+
       // Aquí se implementaría la llamada al servicio para eliminar
       // Por ahora solo simulamos la eliminación
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       onSuccess();
     } catch (error) {
-      console.error('Error al eliminar:', error);
-      alert('Error al eliminar el seguimiento');
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar el seguimiento");
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export function SeguimientoDeleteModal({
               Eliminar Seguimiento
             </h2>
           </div>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -66,9 +66,10 @@ export function SeguimientoDeleteModal({
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              ¿Estás seguro de que quieres eliminar este seguimiento? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar este seguimiento? Esta
+              acción no se puede deshacer.
             </p>
-            
+
             {/* Información del seguimiento a eliminar */}
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="space-y-3">
@@ -77,30 +78,36 @@ export function SeguimientoDeleteModal({
                   <div>
                     <p className="text-sm font-medium text-red-900">Profesor</p>
                     <p className="text-sm text-red-700">
-                      {seguimiento.cargaAcademica.profesor?.nombre} {seguimiento.cargaAcademica.profesor?.apellido}
+                      {seguimiento.cargaAcademica.profesor?.nombre}{" "}
+                      {seguimiento.cargaAcademica.profesor?.apellido}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
                   <BookOpen className="h-4 w-4 text-red-600" />
                   <div>
-                    <p className="text-sm font-medium text-red-900">Asignatura</p>
+                    <p className="text-sm font-medium text-red-900">
+                      Asignatura
+                    </p>
                     <p className="text-sm text-red-700">
-                      {seguimiento.cargaAcademica.asignatura?.nombre}
+                      {seguimiento.cargaAcademica.asignatura}
                     </p>
                     <p className="text-xs text-red-600">
-                      Clave: {seguimiento.cargaAcademica.asignatura?.clave}
+                      {/* La clave de asignatura no está disponible en el tipo actual */}
+                      {/* TODO: Agregar clave de asignatura al tipo CargaAcademica si es necesario */}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-4 w-4 text-red-600" />
                   <div>
-                    <p className="text-sm font-medium text-red-900">Cuatrimestre</p>
+                    <p className="text-sm font-medium text-red-900">
+                      Cuatrimestre
+                    </p>
                     <p className="text-sm text-red-700">
-                      {seguimiento.cuatrimestre.nombre}
+                      {seguimiento.cuatrimestre.nombreGenerado}
                     </p>
                   </div>
                 </div>
@@ -112,7 +119,10 @@ export function SeguimientoDeleteModal({
             <p className="font-medium mb-2">Esta acción eliminará:</p>
             <ul className="list-disc list-inside space-y-1 text-gray-600">
               <li>El seguimiento completo del curso</li>
-              <li>Todos los detalles asociados ({seguimiento.detalles.length} temas)</li>
+              <li>
+                Todos los detalles asociados ({seguimiento.detalles.length}{" "}
+                temas)
+              </li>
               <li>El historial de revisiones</li>
               <li>Cualquier notificación relacionada</li>
             </ul>
@@ -124,7 +134,7 @@ export function SeguimientoDeleteModal({
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          
+
           <Button
             variant="destructive"
             onClick={handleDelete}
@@ -132,7 +142,7 @@ export function SeguimientoDeleteModal({
             className="flex items-center space-x-2"
           >
             <Trash2 className="h-4 w-4" />
-            {isLoading ? 'Eliminando...' : 'Eliminar Seguimiento'}
+            {isLoading ? "Eliminando..." : "Eliminar Seguimiento"}
           </Button>
         </div>
       </div>

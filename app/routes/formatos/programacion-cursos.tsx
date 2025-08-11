@@ -7,7 +7,7 @@ import { ProgramacionCursosTable } from "~/components/formatos/programacion-curs
 import {
   ProgramacionCursosFilters,
   type FilterOptions,
-} from "~/components/formatos/programacion-cursos/ProgramacionCursosFilters";
+} from "~/components/formatos/programacion-cursos";
 import { Button } from "~/components/ui/Button";
 import { RefreshCw, FileText, Filter as FilterIcon } from "lucide-react";
 
@@ -30,8 +30,6 @@ export default function ProgramacionCursosPage() {
     refresh: refreshCoordinador,
   } = useSeguimientosCurso({
     autoFetch: isCoordinador,
-    page: 1,
-    limit: 10,
   });
 
   // Hook para profesores (solo sus seguimientos)
@@ -60,16 +58,16 @@ export default function ProgramacionCursosPage() {
 
     if (isCoordinador) {
       updateOptionsCoordinador({
-        estado: newFilters.estado,
-        cuatrimestreId: newFilters.cuatrimestreId,
-        profesorId: newFilters.profesorId,
-        carrera: newFilters.carrera,
-        search: newFilters.search,
+        estado: newFilters.estado || undefined,
+        cuatrimestreId: newFilters.cuatrimestreId || undefined,
+        profesorId: newFilters.profesorId || undefined,
+        carrera: newFilters.carrera || undefined,
+        search: newFilters.search || undefined,
       });
     } else {
       updateOptionsProfesor({
-        estado: newFilters.estado,
-        cuatrimestreId: newFilters.cuatrimestreId,
+        estado: newFilters.estado || undefined,
+        cuatrimestreId: newFilters.cuatrimestreId || undefined,
       });
     }
   };
@@ -84,9 +82,9 @@ export default function ProgramacionCursosPage() {
 
   const handlePageChange = (page: number) => {
     if (isCoordinador) {
-      updateOptionsCoordinador({ page });
+      updateOptionsCoordinador({ page: page });
     } else {
-      updateOptionsProfesor({ page });
+      updateOptionsProfesor({ page: page });
     }
   };
 
