@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useAuthStore } from "~/store/auth";
-import { useTutorias } from "~/hooks/tutorias-hooks";
+import { useTutorias } from "~/hooks/tutorias-hooks/useTutorias";
+import { useUsuarios } from "~/hooks/useUsuarios";
 import {
   TutoriasTable,
   ReportesSection,
   TutoriaDetailsModal,
   TutoriaEditModal,
   TutoriaDeleteModal,
-} from "~/components/formatos/tutorias";
+} from "~/components/formatos/tutorias/";
 import {
-  TutoriasFilters,
   type FilterOptions,
-} from "~/components/formatos/tutorias";
+  TutoriasFilters,
+} from "~/components/formatos/tutorias/";
 import { Button } from "~/components/ui/Button";
 import {
   RefreshCw,
@@ -50,6 +51,18 @@ export default function TutoriasPage() {
     onlyMyTutorias: !isCoordinador,
   });
 
+  // Hook para obtener profesores
+  const { usuarios: profesores, isLoading: isLoadingProfesores } = useUsuarios({
+    limit: 100,
+  });
+
+  // Filtrar solo profesores
+  const profesoresFiltrados = profesores.filter(
+    (usuario) =>
+      usuario.rol === "profesor_tiempo_completo" ||
+      usuario.rol === "profesor_asignatura"
+  );
+
   // Logs para debugging
   console.log("=== DEBUG TUTORIAS FORMATOS ===");
   console.log("Usuario:", usuario);
@@ -59,6 +72,7 @@ export default function TutoriasPage() {
   console.log("isLoading:", isLoading);
   console.log("isInitializing:", isInitializing);
   console.log("URL actual:", window.location.href);
+  console.log("Profesores obtenidos:", profesoresFiltrados);
   console.log("================================");
 
   // Efecto para manejar la inicialización
@@ -115,12 +129,6 @@ export default function TutoriasPage() {
     { id: "1", nombre: "Primer Cuatrimestre 2024" },
     { id: "2", nombre: "Segundo Cuatrimestre 2024" },
     { id: "3", nombre: "Tercer Cuatrimestre 2024" },
-  ];
-
-  const profesores = [
-    { id: "1", nombre: "Juan", apellido: "Pérez" },
-    { id: "2", nombre: "María", apellido: "García" },
-    { id: "3", nombre: "Carlos", apellido: "López" },
   ];
 
   const carreras = [
@@ -250,7 +258,7 @@ export default function TutoriasPage() {
           <TutoriasFilters
             onFiltersChange={handleFiltersChange}
             cuatrimestres={cuatrimestres}
-            profesores={profesores}
+            profesores={profesoresFiltrados}
             carreras={carreras}
             isLoading={isLoading}
           />
@@ -319,6 +327,7 @@ export default function TutoriasPage() {
               isOpen={isDetailsModalOpen}
               onClose={() => setIsDetailsModalOpen(false)}
               tutoria={selectedTutoria}
+              profesores={profesoresFiltrados}
             />
 
             <TutoriaEditModal

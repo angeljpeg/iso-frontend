@@ -1,269 +1,401 @@
-import { Button } from "~/components/ui/button";
+import { Button } from "~/components/ui/Button";
 import { Download } from "lucide-react";
-import jsPDF from "jspdf";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  pdf,
+} from "@react-pdf/renderer";
 import type { Tutoria } from "~/types/tutorias";
 
 interface TutoriaPDFDownloaderProps {
   tutoria: Tutoria;
+  profesores: Array<{ id: string; nombre: string; apellido: string }>;
 }
 
-export function TutoriaPDFDownloader({ tutoria }: TutoriaPDFDownloaderProps) {
-  const generatePDF = () => {
-    const doc = new jsPDF("landscape"); // Cambiar a orientación horizontal para mejor distribución
+// Estilos para el PDF
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: "column",
+    backgroundColor: "#ffffff",
+    padding: 20,
+    fontSize: 10,
+  },
+  header: {
+    flexDirection: "row",
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  logo: {
+    width: 30,
+    height: 30,
+    backgroundColor: "#006400",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  logoText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  titleSection: {
+    flex: 1,
+  },
+  mainTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#006400",
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#000000",
+  },
+  isoLogo: {
+    width: 24,
+    height: 24,
+    backgroundColor: "#808080",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  isoText: {
+    color: "#ffffff",
+    fontSize: 7,
+    fontWeight: "bold",
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
+    marginVertical: 15,
+  },
+  infoGrid: {
+    marginBottom: 25,
+  },
+  infoRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  infoLabel: {
+    width: 80,
+    fontSize: 10,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
+  infoValue: {
+    flex: 1,
+    fontSize: 10,
+  },
+  table: {
+    marginBottom: 20,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
+    paddingBottom: 5,
+    marginBottom: 5,
+  },
+  headerCell: {
+    fontSize: 8,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  tableSubHeader: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  subHeaderCell: {
+    fontSize: 6,
+    textAlign: "center",
+    paddingVertical: 3,
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#cccccc",
+    paddingVertical: 5,
+  },
+  cell: {
+    fontSize: 7,
+    textAlign: "center",
+    paddingVertical: 2,
+  },
+  observations: {
+    marginTop: 20,
+  },
+  observationsLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  observationsBox: {
+    borderWidth: 1,
+    borderColor: "#000000",
+    padding: 10,
+    minHeight: 60,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    fontSize: 8,
+    color: "#808080",
+  },
+});
 
-    // Configuración de fuentes y colores
-    const primaryColor = [0, 100, 0]; // Verde UTN
-    const secondaryColor = [128, 128, 128]; // Gris para texto secundario
+// Componente del PDF
+const TutoriaPDF = ({
+  tutoria,
+  profesores,
+}: {
+  tutoria: Tutoria;
+  profesores: Array<{ id: string; nombre: string; apellido: string }>;
+}) => {
+  // Debug: mostrar los datos que llegan
+  console.log("=== DEBUG TUTORIA PDF ===");
+  console.log("Tutoria completa:", tutoria);
+  console.log("nombreTutor:", tutoria.nombreTutor);
+  console.log("carrera:", tutoria.carrera);
+  console.log("grupo:", tutoria.grupo);
+  console.log("cuatrimestre:", tutoria.cuatrimestre);
+  console.log("fecha:", tutoria.fecha);
+  console.log("Profesores disponibles:", profesores);
 
-    // Función para agregar texto con estilo
-    const addText = (
-      text: string,
-      x: number,
-      y: number,
-      fontSize: number = 12,
-      isBold: boolean = false,
-      color: number[] = [0, 0, 0]
-    ) => {
-      doc.setFontSize(fontSize);
-      doc.setFont(undefined, isBold ? "bold" : "normal");
-      doc.setTextColor(color[0], color[1], color[2]);
-      doc.text(text, x, y);
-    };
+  // Acceder a campos que pueden no estar tipados pero existen en el backend
+  const tutoriaAny = tutoria as any;
+  console.log("cargaAcademica (any):", tutoriaAny.cargaAcademica);
+  console.log("profesor (any):", tutoriaAny.profesor);
+  console.log("tutor (any):", tutoriaAny.tutor);
+  console.log("nombreProfesor (any):", tutoriaAny.nombreProfesor);
 
-    // Función para dibujar rectángulo
-    const drawRect = (
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      color: number[] = [0, 0, 0]
-    ) => {
-      doc.setDrawColor(color[0], color[1], color[2]);
-      doc.setLineWidth(0.5);
-      doc.rect(x, y, width, height);
-    };
-
-    // Función para dibujar línea
-    const drawLine = (
-      x1: number,
-      y1: number,
-      x2: number,
-      y2: number,
-      color: number[] = [0, 0, 0]
-    ) => {
-      doc.setDrawColor(color[0], color[1], color[2]);
-      doc.setLineWidth(0.5);
-      doc.line(x1, y1, x2, y2);
-    };
-
-    // Encabezado
-    // Logo UTN (simulado con un rectángulo verde)
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(20, 20, 40, 40, "F");
-    addText("UTN", 35, 42, 18, true, [255, 255, 255]);
-
-    // Título principal
-    addText(
-      "UNIVERSIDAD TECNOLÓGICA DE NOGALES, SONORA",
-      80,
-      30,
-      18,
-      true,
-      primaryColor
-    );
-    addText("REPORTE BIMESTRAL DEL TUTOR", 80, 45, 16, true, [0, 0, 0]);
-
-    // Logo de certificación (simulado)
-    doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    doc.circle(270, 40, 20, "F");
-    addText("ISO", 265, 45, 10, true, [255, 255, 255]);
-    addText("9001", 265, 52, 10, true, [255, 255, 255]);
-
-    // Información del reporte
-    let yPosition = 80;
-
-    // Línea separadora
-    drawLine(20, yPosition - 5, 280, yPosition - 5, [0, 0, 0]);
-
-    // Campos de información
-    const infoFields = [
-      { label: "CUATRIMESTRE:", value: tutoria.cuatrimestre },
-      {
-        label: "NOMBRE DEL TUTOR:",
-        value: tutoria.nombreTutor || "No especificado",
-      },
-      { label: "PROGRAMA EDUCATIVO:", value: tutoria.carrera },
-      { label: "GRUPO:", value: tutoria.grupo },
-      { label: "FECHA:", value: tutoria.fecha },
-    ];
-
-    infoFields.forEach((field, index) => {
-      addText(field.label, 20, yPosition + index * 12, 12, true);
-      addText(field.value, 80, yPosition + index * 12, 12, false);
-    });
-
-    yPosition += 70;
-
-    // Tabla principal - Mejorar dimensiones y legibilidad
-    // Encabezados principales de la tabla
-    const mainHeaders = [
-      { text: "No.", width: 25, x: 20 },
-      { text: "Nombre del alumno", width: 60, x: 45 },
-      { text: "Tipo de vulnerabilidad", width: 80, x: 105 },
-      { text: "Área de canalización", width: 80, x: 185 },
-      { text: "Fue atendido", width: 40, x: 265 },
-      { text: "Presentó mejoría", width: 40, x: 305 },
-    ];
-
-    // Dibujar encabezados principales
-    mainHeaders.forEach((header) => {
-      drawRect(header.x, yPosition, header.width, 12, [0, 0, 0]);
-      addText(header.text, header.x + 2, yPosition + 8, 10, true);
-    });
-
-    yPosition += 12;
-
-    // Subencabezados para vulnerabilidad
-    const vulnerabilidadHeaders = [
-      { text: "Académica", x: 105, width: 25 },
-      { text: "Personal", x: 130, width: 25 },
-      { text: "Socio-económica", x: 155, width: 30 },
-    ];
-
-    vulnerabilidadHeaders.forEach((header) => {
-      drawRect(header.x, yPosition, header.width, 10, [0, 0, 0]);
-      addText(header.text, header.x + 2, yPosition + 7, 8, false);
-    });
-
-    // Subencabezados para área de canalización
-    const areaHeaders = [
-      { text: "1. Asesoría", x: 185, width: 25 },
-      { text: "2. Médico", x: 210, width: 25 },
-      { text: "3. Psicólogo", x: 235, width: 25 },
-      { text: "4. Estudiantiles", x: 260, width: 25 },
-      { text: "5. Admón", x: 285, width: 25 },
-    ];
-
-    areaHeaders.forEach((header) => {
-      drawRect(header.x, yPosition, header.width, 10, [0, 0, 0]);
-      addText(header.text, header.x + 1, yPosition + 7, 7, false);
-    });
-
-    // Subencabezados para "Fue atendido"
-    drawRect(265, yPosition, 20, 10, [0, 0, 0]);
-    addText("Sí", 270, yPosition + 7, 8, false);
-    drawRect(285, yPosition, 20, 10, [0, 0, 0]);
-    addText("No", 295, yPosition + 7, 8, false);
-
-    yPosition += 10;
-
-    // Filas de datos de alumnos
-    if (tutoria.detalles && tutoria.detalles.length > 0) {
-      tutoria.detalles.forEach((detalle, index) => {
-        if (yPosition > 180) {
-          doc.addPage("landscape");
-          yPosition = 20;
-        }
-
-        const rowHeight = 12;
-
-        // Número
-        drawRect(20, yPosition, 25, rowHeight, [0, 0, 0]);
-        addText((index + 1).toString(), 30, yPosition + 8, 10, false);
-
-        // Nombre del alumno
-        drawRect(45, yPosition, 60, rowHeight, [0, 0, 0]);
-        addText(detalle.nombreAlumno, 47, yPosition + 8, 9, false);
-
-        // Vulnerabilidad - Marcar con X
-        drawRect(105, yPosition, 25, rowHeight, [0, 0, 0]);
-        if (detalle.vulnerabilidad === "academica")
-          addText("X", 115, yPosition + 8, 12, true);
-
-        drawRect(130, yPosition, 25, rowHeight, [0, 0, 0]);
-        if (detalle.vulnerabilidad === "personal")
-          addText("X", 140, yPosition + 8, 12, true);
-
-        drawRect(155, yPosition, 30, rowHeight, [0, 0, 0]);
-        if (detalle.vulnerabilidad === "socioeconomica")
-          addText("X", 165, yPosition + 8, 12, true);
-
-        // Área de canalización
-        drawRect(185, yPosition, 80, rowHeight, [0, 0, 0]);
-        addText(detalle.areaCanalizacion, 187, yPosition + 8, 9, false);
-
-        // Fue atendido
-        drawRect(265, yPosition, 20, rowHeight, [0, 0, 0]);
-        if (detalle.fueAtendido) addText("X", 275, yPosition + 8, 12, true);
-
-        drawRect(285, yPosition, 20, rowHeight, [0, 0, 0]);
-        if (!detalle.fueAtendido) addText("X", 295, yPosition + 8, 12, true);
-
-        // Presentó mejoría
-        drawRect(305, yPosition, 40, rowHeight, [0, 0, 0]);
-        addText(
-          detalle.presentoMejoria ? "Sí" : "No",
-          315,
-          yPosition + 8,
-          10,
-          false
-        );
-
-        yPosition += rowHeight;
-      });
-    } else {
-      // Si no hay detalles, mostrar mensaje
-      addText(
-        "No hay alumnos registrados en esta tutoría",
-        20,
-        yPosition + 10,
-        12,
-        false,
-        secondaryColor
-      );
+  // Función para obtener el nombre del profesor desde diferentes fuentes
+  const getNombreProfesor = () => {
+    // 1. Intentar desde nombreTutor
+    if (tutoria.nombreTutor && tutoria.nombreTutor.trim() !== "") {
+      return tutoria.nombreTutor;
     }
 
-    // Observaciones
-    yPosition += 20;
-    drawRect(20, yPosition, 250, 40, [0, 0, 0]);
-    addText("Observaciones (opcional):", 22, yPosition + 8, 12, true);
-    if (tutoria.observaciones) {
-      addText(tutoria.observaciones, 22, yPosition + 20, 10, false);
+    // 2. Intentar desde campos que pueden existir en el backend
+    if (tutoriaAny.nombreProfesor && tutoriaAny.nombreProfesor.trim() !== "") {
+      return tutoriaAny.nombreProfesor;
     }
 
-    // Pie de página
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      addText(
-        `Página ${i} de ${pageCount}`,
-        20,
-        190,
-        10,
-        false,
-        secondaryColor
-      );
-      addText(
-        `Generado el: ${new Date().toLocaleDateString("es-MX")}`,
-        200,
-        190,
-        10,
-        false,
-        secondaryColor
-      );
+    if (tutoriaAny.profesor && tutoriaAny.profesor.trim() !== "") {
+      return tutoriaAny.profesor;
     }
 
-    // Guardar el PDF
-    const fileName = `Tutoria_${tutoria.grupo}_${tutoria.cuatrimestre.replace(
-      /\s+/g,
-      "_"
-    )}.pdf`;
-    doc.save(fileName);
+    if (tutoriaAny.tutor && tutoriaAny.tutor.trim() !== "") {
+      return tutoriaAny.tutor;
+    }
+
+    // 3. Intentar desde cargaAcademica.profesorId usando el array de profesores
+    if (
+      tutoriaAny.cargaAcademica &&
+      typeof tutoriaAny.cargaAcademica === "object" &&
+      tutoriaAny.cargaAcademica.profesorId
+    ) {
+      const profesor = profesores.find(
+        (p) => p.id === tutoriaAny.cargaAcademica.profesorId
+      );
+      if (profesor) {
+        return `${profesor.nombre} ${profesor.apellido}`;
+      }
+    }
+
+    // 4. Si no hay nada, mostrar mensaje
+    return "No especificado";
+  };
+
+  const nombreProfesor = getNombreProfesor();
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.logo}>
+            <Text style={styles.logoText}>UTN</Text>
+          </View>
+          <View style={styles.titleSection}>
+            <Text style={styles.mainTitle}>
+              UNIVERSIDAD TECNOLÓGICA DE NOGALES, SONORA
+            </Text>
+            <Text style={styles.subtitle}>REPORTE BIMESTRAL DEL TUTOR</Text>
+          </View>
+          <View style={styles.isoLogo}>
+            <Text style={styles.isoText}>ISO</Text>
+            <Text style={styles.isoText}>9001</Text>
+          </View>
+        </View>
+
+        {/* Separador */}
+        <View style={styles.separator} />
+
+        {/* Información del reporte */}
+        <View style={styles.infoGrid}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>NOMBRE DEL TUTOR:</Text>
+            <Text style={styles.infoValue}>{nombreProfesor}</Text>
+            <Text style={styles.infoLabel}>GRUPO:</Text>
+            <Text style={styles.infoValue}>{tutoria.grupo}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>PROGRAMA EDUCATIVO:</Text>
+            <Text style={styles.infoValue}>{tutoria.carrera}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>CUATRIMESTRE:</Text>
+            <Text style={styles.infoValue}>{tutoria.cuatrimestre}</Text>
+            <Text style={styles.infoLabel}>FECHA:</Text>
+            <Text style={styles.infoValue}>{tutoria.fecha}</Text>
+          </View>
+        </View>
+
+        {/* Tabla */}
+        <View style={styles.table}>
+          {/* Encabezados principales */}
+          <View style={styles.tableHeader}>
+            <Text style={[styles.headerCell, { width: "8%" }]}>No.</Text>
+            <Text style={[styles.headerCell, { width: "18%" }]}>
+              Nombre del alumno
+            </Text>
+            <Text style={[styles.headerCell, { width: "18%" }]}>
+              Tipo de vulnerabilidad
+            </Text>
+            <Text style={[styles.headerCell, { width: "18%" }]}>
+              Área de canalización
+            </Text>
+            <Text style={[styles.headerCell, { width: "12%" }]}>
+              Fue atendido
+            </Text>
+            <Text style={[styles.headerCell, { width: "12%" }]}>
+              Presentó mejoría
+            </Text>
+            <Text style={[styles.headerCell, { width: "14%" }]}>
+              Causa de baja
+            </Text>
+          </View>
+
+          {/* Subencabezados */}
+          <View style={styles.tableSubHeader}>
+            <Text style={[styles.subHeaderCell, { width: "8%" }]}></Text>
+            <Text style={[styles.subHeaderCell, { width: "18%" }]}></Text>
+            <Text style={[styles.subHeaderCell, { width: "18%" }]}>
+              Académica, Personal, Socio-económica
+            </Text>
+            <Text style={[styles.subHeaderCell, { width: "18%" }]}>
+              1.Asesoría, 2.Médico, 3.Psicólogo, 4.Estudiantiles, 5.Admón,
+              6.Vinculación, 7.Dir.Carrera, 8.Otra
+            </Text>
+            <Text style={[styles.subHeaderCell, { width: "12%" }]}>Sí, No</Text>
+            <Text style={[styles.subHeaderCell, { width: "12%" }]}>Sí, No</Text>
+            <Text style={[styles.subHeaderCell, { width: "14%" }]}>
+              Marcar X si causó baja + causa específica
+            </Text>
+          </View>
+
+          {/* Filas de datos */}
+          {tutoria.detalles && tutoria.detalles.length > 0 ? (
+            tutoria.detalles.map((detalle, index) => (
+              <View key={detalle.id} style={styles.tableRow}>
+                <Text style={[styles.cell, { width: "8%" }]}>{index + 1}</Text>
+                <Text style={[styles.cell, { width: "18%" }]}>
+                  {detalle.nombreAlumno}
+                </Text>
+                <Text style={[styles.cell, { width: "18%" }]}>
+                  {detalle.vulnerabilidad === "academica" && "Académica"}
+                  {detalle.vulnerabilidad === "personal" && "Personal"}
+                  {detalle.vulnerabilidad === "socioeconomica" &&
+                    "Socio-económica"}
+                </Text>
+                <Text style={[styles.cell, { width: "18%" }]}>
+                  {detalle.areaCanalizacion}
+                </Text>
+                <Text style={[styles.cell, { width: "12%" }]}>
+                  {detalle.fueAtendido ? "Sí" : "No"}
+                </Text>
+                <Text style={[styles.cell, { width: "12%" }]}>
+                  {detalle.presentoMejoria ? "Sí" : "No"}
+                </Text>
+                <Text style={[styles.cell, { width: "14%" }]}>
+                  {detalle.causoBaja ? (
+                    <>X - {detalle.causaBaja || "Sin causa especificada"}</>
+                  ) : (
+                    "No"
+                  )}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.tableRow}>
+              <Text
+                style={[styles.cell, { width: "100%", textAlign: "center" }]}
+              >
+                No hay alumnos registrados en esta tutoría
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Observaciones */}
+        <View style={styles.observations}>
+          <Text style={styles.observationsLabel}>
+            Observaciones (opcional):
+          </Text>
+          <View style={styles.observationsBox}>
+            {tutoria.observaciones && (
+              <Text style={{ fontSize: 8 }}>{tutoria.observaciones}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text>Generado el: {new Date().toLocaleDateString("es-MX")}</Text>
+          <Text>Página 1 de 1</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};
+
+export function TutoriaPDFDownloader({
+  tutoria,
+  profesores,
+}: TutoriaPDFDownloaderProps) {
+  const handleDownload = async () => {
+    try {
+      const blob = await pdf(
+        <TutoriaPDF tutoria={tutoria} profesores={profesores} />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Tutoria_${tutoria.grupo}_${tutoria.cuatrimestre.replace(
+        /\s+/g,
+        "_"
+      )}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generando PDF:", error);
+      alert("Error al generar el PDF. Inténtalo de nuevo.");
+    }
   };
 
   return (
     <Button
-      onClick={generatePDF}
+      onClick={handleDownload}
       variant="outline"
       size="sm"
       className="flex items-center gap-2"

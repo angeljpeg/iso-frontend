@@ -10,12 +10,14 @@ interface TutoriaDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   tutoria: Tutoria;
+  profesores: Array<{ id: string; nombre: string; apellido: string }>;
 }
 
 export function TutoriaDetailsModal({
   isOpen,
   onClose,
   tutoria,
+  profesores,
 }: TutoriaDetailsModalProps) {
   const getEstadoColor = (estado: string) => {
     switch (estado) {
@@ -93,9 +95,7 @@ export function TutoriaDetailsModal({
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <TutoriaPDFDownloader tutoria={tutoria}>
-              Exportar PDF
-            </TutoriaPDFDownloader>
+            <TutoriaPDFDownloader tutoria={tutoria} profesores={profesores} />
             <Button
               variant="ghost"
               size="sm"
