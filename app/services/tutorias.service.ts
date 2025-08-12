@@ -12,7 +12,11 @@ const BASE_URL = "/tutorias";
 export const tutoriasService = {
   // Obtener todas las tutorías
   async getAll(token: string): Promise<TutoriasResponse> {
-    const response = await fetch(`${API_BASE_URL}${BASE_URL}`, {
+    const url = `${API_BASE_URL}${BASE_URL}`;
+    console.log("🌐 Llamando a la API:", url);
+    console.log("🔑 Token:", token ? "Presente" : "Ausente");
+    
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -20,11 +24,18 @@ export const tutoriasService = {
       },
     });
 
+    console.log("📡 Status:", response.status);
+    console.log("📡 StatusText:", response.statusText);
+
     if (!response.ok) {
-      throw new Error(`Error al obtener tutorías: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("❌ Error response:", errorText);
+      throw new Error(`Error al obtener tutorías: ${response.status} - ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log("✅ Respuesta exitosa:", data);
+    return data;
   },
 
   // Obtener tutorías por carga académica
@@ -147,6 +158,28 @@ export const tutoriasService = {
 
     if (!response.ok) {
       throw new Error(`Error al actualizar la tutoria: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Actualizar estado de revisión de una tutoria
+  async updateEstadoRevision(
+    id: number,
+    estadoRevision: string,
+    token: string
+  ): Promise<TutoriaResponse> {
+    const response = await fetch(`${API_BASE_URL}${BASE_URL}/${id}/estado-revision`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ estadoRevision }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al actualizar el estado de revisión: ${response.statusText}`);
     }
 
     return response.json();
