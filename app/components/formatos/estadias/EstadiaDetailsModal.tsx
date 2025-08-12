@@ -1,6 +1,7 @@
 import { Modal } from "~/components/ui/modal";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/Card";
+import { Button } from "~/components/ui/Button";
 import {
   Users,
   Calendar,
@@ -10,8 +11,10 @@ import {
   FileText,
   CheckCircle,
   XCircle,
+  Download,
 } from "lucide-react";
 import { type Estadia } from "~/types/estadias";
+import { EstadiaPDFDownloader } from "~/components/formatos/pdf/EstadiaPDFDownloader";
 
 interface EstadiaDetailsModalProps {
   estadia: Estadia;
@@ -231,13 +234,19 @@ export function EstadiaDetailsModal({
         </Card>
 
         {/* Botones de acción */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
+        <div className="flex justify-between items-center space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center space-x-2">
+            <EstadiaPDFDownloader estadia={estadia}>
+              <Button variant="outline" className="flex items-center space-x-2">
+                <Download className="h-4 w-4" />
+                Exportar Reporte PDF
+              </Button>
+            </EstadiaPDFDownloader>
+          </div>
+
+          <Button onClick={onClose} variant="outline">
             Cerrar
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
