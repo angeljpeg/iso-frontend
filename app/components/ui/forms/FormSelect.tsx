@@ -16,6 +16,7 @@ interface FormSelectProps
   required?: boolean;
   options: SelectOption[];
   placeholder?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
@@ -28,6 +29,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
       required,
       options,
       placeholder,
+      onChange,
       className = "",
       ...props
     },
@@ -59,6 +61,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
               }
               ${className}
             `}
+            onChange={onChange}
             {...registration}
             {...props}
           >

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "../../ui/Button";
-import { Input } from "../../ui/forms/Input";
-import { Select } from "../../ui/forms/Select";
-import { DatePicker } from "../../ui/forms/DatePicker";
-import { Checkbox } from "../../ui/forms/Checkbox";
-import { QueryNecesidadesEspecialesDto } from "../../../types/necesidades-especiales";
+import { FormInput } from "../../ui/forms/FormInput";
+import { FormSelect } from "../../ui/forms/FormSelect";
+import { DatePicker } from "../../ui/date-picker";
+import { FormCheckbox } from "../../ui/forms/FormCheckbox";
+
+import type { QueryNecesidadesEspecialesDto } from "../../../types/necesidades-especiales";
 
 interface NecesidadesEspecialesFiltersProps {
   filters: QueryNecesidadesEspecialesDto;
@@ -44,26 +45,26 @@ export const NecesidadesEspecialesFilters: React.FC<
     <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
       {/* Filtros básicos siempre visibles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
+        <FormInput
           label="Nombre del Alumno"
           placeholder="Buscar por nombre..."
           value={filters.nombreAlumno || ""}
-          onChange={(e) => handleFilterChange("nombreAlumno", e.target.value)}
+          onChange={(value) => handleFilterChange("nombreAlumno", value)}
         />
 
-        <Input
+        <FormInput
           label="Número de Matrícula"
           placeholder="Buscar por matrícula..."
           value={filters.numeroMatricula || ""}
-          onChange={(e) =>
-            handleFilterChange("numeroMatricula", e.target.value)
-          }
+          onChange={(value) => handleFilterChange("numeroMatricula", value)}
         />
 
-        <Select
+        <FormSelect
           label="Programa Educativo"
           value={filters.programaEducativo || ""}
-          onChange={(value) => handleFilterChange("programaEducativo", value)}
+          onChange={(e) =>
+            handleFilterChange("programaEducativo", e.target.value)
+          }
           options={[
             { value: "", label: "Todos los programas" },
             ...programasEducativos.map((programa) => ({
@@ -92,23 +93,23 @@ export const NecesidadesEspecialesFilters: React.FC<
       {isExpanded && (
         <div className="space-y-4 pt-4 border-t border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Input
+            <FormInput
               label="Nombre del Profesor"
               placeholder="Buscar por profesor..."
               value={filters.nombreProfesor || ""}
-              onChange={(e) =>
-                handleFilterChange("nombreProfesor", e.target.value)
-              }
+              onChange={(value) => handleFilterChange("nombreProfesor", value)}
             />
 
-            <DatePicker
+            <FormInput
               label="Fecha Desde"
+              type="date"
               value={filters.fechaDesde || ""}
               onChange={(value) => handleFilterChange("fechaDesde", value)}
             />
 
-            <DatePicker
+            <FormInput
               label="Fecha Hasta"
+              type="date"
               value={filters.fechaHasta || ""}
               onChange={(value) => handleFilterChange("fechaHasta", value)}
             />
@@ -120,35 +121,35 @@ export const NecesidadesEspecialesFilters: React.FC<
               Tipos de Necesidad
             </label>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <Checkbox
+              <FormCheckbox
                 label="Conductuales"
                 checked={filters.excepcionesConductuales || false}
                 onChange={(checked) =>
                   handleFilterChange("excepcionesConductuales", checked)
                 }
               />
-              <Checkbox
+              <FormCheckbox
                 label="Comunicacionales"
                 checked={filters.excepcionesComunicacionales || false}
                 onChange={(checked) =>
                   handleFilterChange("excepcionesComunicacionales", checked)
                 }
               />
-              <Checkbox
+              <FormCheckbox
                 label="Intelectuales"
                 checked={filters.excepcionesIntelectuales || false}
                 onChange={(checked) =>
                   handleFilterChange("excepcionesIntelectuales", checked)
                 }
               />
-              <Checkbox
+              <FormCheckbox
                 label="Físicas"
                 checked={filters.excepcionesFisicas || false}
                 onChange={(checked) =>
                   handleFilterChange("excepcionesFisicas", checked)
                 }
               />
-              <Checkbox
+              <FormCheckbox
                 label="Superdotación"
                 checked={filters.excepcionesSuperdotacion || false}
                 onChange={(checked) =>
