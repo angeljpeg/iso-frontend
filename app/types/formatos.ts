@@ -46,4 +46,13 @@ export const FORMATOS_ISO: FormatoCard[] = [
     disponible: true,
     color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
   },
+  {
+    id: "necesidades-especiales",
+    titulo: "Reporte de Necesidades Especiales",
+    descripcion: "Reporte de necesidades especiales de estudiantes",
+    icono: "👥",
+    ruta: "/formatos/necesidades-especiales",
+    disponible: true,
+    color: "bg-red-50 border-red-200 hover:bg-red-100",
+  },
 ];
