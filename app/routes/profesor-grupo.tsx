@@ -5,6 +5,8 @@ import { useCargaAcademica } from "../hooks/useCargaAcademica";
 import { useTemas } from "../hooks/useTemas";
 import { Button } from "../components/ui/Button";
 import { TemaCard } from "../components/TemaCard";
+import { CreateNecesidadesEspecialesModal } from "../components/formatos/necesidades-especiales/CreateNecesidadesEspecialesModal";
+import { NecesidadesEspecialesList } from "../components/formatos/necesidades-especiales/NecesidadesEspecialesList";
 import type { CargaAcademica } from "../types/carga-academica";
 
 export default function ProfesorGrupoPage() {
@@ -12,6 +14,7 @@ export default function ProfesorGrupoPage() {
   const navigate = useNavigate();
   const { usuario, isAuthenticated } = useAuthStore();
   const { cargasAcademicas, isLoading: isLoadingCargas } = useCargaAcademica();
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Filtrar las cargas académicas para este grupo específico
   const cargasDelGrupo = cargasAcademicas.filter(
@@ -52,6 +55,19 @@ export default function ProfesorGrupoPage() {
     navigate(`/seguimiento?grupoId=${id}&temaId=${temaId}`);
   };
 
+  const handleCreateNecesidadesEspeciales = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+  };
+
+  const handleNecesidadesEspecialesSuccess = () => {
+    // El modal se cerrará automáticamente después del éxito
+    // Aquí podrías agregar lógica adicional si es necesario
+  };
+
   if (
     !isAuthenticated ||
     (usuario?.rol !== "profesor_tiempo_completo" &&
@@ -62,6 +78,7 @@ export default function ProfesorGrupoPage() {
 
   const grupo = cargasDelGrupo[0]?.grupo;
   const asignatura = cargasDelGrupo[0]?.asignatura;
+  const cargaAcademica = cargasDelGrupo[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,6 +165,31 @@ export default function ProfesorGrupoPage() {
                 </div>
               </div>
 
+              {/* Necesidades Especiales */}
+              <div>
+                <div className="mb-4 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Necesidades Especiales
+                    </h2>
+                    <p className="text-gray-600">
+                      Gestiona las necesidades especiales de los alumnos del
+                      grupo
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleCreateNecesidadesEspeciales}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    ➕ Crear Necesidades Especiales
+                  </Button>
+                </div>
+
+                {cargaAcademica && (
+                  <NecesidadesEspecialesList cargaAcademica={cargaAcademica} />
+                )}
+              </div>
+
               {/* Temas de la asignatura */}
               <div>
                 <div className="mb-4">
@@ -232,6 +274,16 @@ export default function ProfesorGrupoPage() {
           )}
         </div>
       </main>
+
+      {/* Modal para crear necesidades especiales */}
+      {cargaAcademica && showCreateModal && (
+        <CreateNecesidadesEspecialesModal
+          isOpen={showCreateModal}
+          onClose={handleCloseCreateModal}
+          onSuccess={handleNecesidadesEspecialesSuccess}
+          cargaAcademica={cargaAcademica}
+        />
+      )}
     </div>
   );
 }

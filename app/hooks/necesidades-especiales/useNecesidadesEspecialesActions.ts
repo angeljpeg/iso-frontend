@@ -9,6 +9,7 @@ import {
   type UpdateNecesidadesEspecialesDto,
   type NecesidadesEspeciales,
 } from "../../types/necesidades-especiales";
+import { useAuthStore } from "../../store/auth";
 
 interface UseNecesidadesEspecialesActionsReturn {
   createNecesidad: (
@@ -27,6 +28,7 @@ interface UseNecesidadesEspecialesActionsReturn {
 
 export const useNecesidadesEspecialesActions =
   (): UseNecesidadesEspecialesActionsReturn => {
+    const { accessToken } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -35,6 +37,11 @@ export const useNecesidadesEspecialesActions =
       async (
         data: CreateNecesidadesEspecialesDto
       ): Promise<NecesidadesEspeciales | null> => {
+        if (!accessToken) {
+          setError("No hay token de autenticación");
+          return null;
+        }
+
         try {
           setLoading(true);
           setError(null);
@@ -42,7 +49,7 @@ export const useNecesidadesEspecialesActions =
 
           const result = await createNecesidadesEspeciales({
             ...data,
-            token: "your-token-here", // TODO: Get from auth context
+            token: accessToken,
           });
           setSuccess("Necesidad especial creada exitosamente");
           return result;
@@ -58,7 +65,7 @@ export const useNecesidadesEspecialesActions =
           setLoading(false);
         }
       },
-      []
+      [accessToken]
     );
 
     const updateNecesidad = useCallback(
@@ -66,6 +73,11 @@ export const useNecesidadesEspecialesActions =
         id: number,
         data: UpdateNecesidadesEspecialesDto
       ): Promise<NecesidadesEspeciales | null> => {
+        if (!accessToken) {
+          setError("No hay token de autenticación");
+          return null;
+        }
+
         try {
           setLoading(true);
           setError(null);
@@ -74,7 +86,7 @@ export const useNecesidadesEspecialesActions =
           const result = await updateNecesidadesEspeciales({
             id: id.toString(),
             ...data,
-            token: "your-token-here", // TODO: Get from auth context
+            token: accessToken,
           });
           setSuccess("Necesidad especial actualizada exitosamente");
           return result;
@@ -90,11 +102,16 @@ export const useNecesidadesEspecialesActions =
           setLoading(false);
         }
       },
-      []
+      [accessToken]
     );
 
     const deleteNecesidad = useCallback(
       async (id: number): Promise<boolean> => {
+        if (!accessToken) {
+          setError("No hay token de autenticación");
+          return false;
+        }
+
         try {
           setLoading(true);
           setError(null);
@@ -102,7 +119,7 @@ export const useNecesidadesEspecialesActions =
 
           await deleteNecesidadesEspeciales({
             id: id.toString(),
-            token: "your-token-here", // TODO: Get from auth context
+            token: accessToken,
           });
           setSuccess("Necesidad especial eliminada exitosamente");
           return true;
@@ -118,7 +135,7 @@ export const useNecesidadesEspecialesActions =
           setLoading(false);
         }
       },
-      []
+      [accessToken]
     );
 
     const clearMessages = useCallback(() => {
